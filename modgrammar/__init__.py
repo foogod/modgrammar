@@ -1275,7 +1275,7 @@ class ExceptionGrammar (Grammar):
         if e_count is None:
           # Subgrammars should not be asking for more data after eof.
           raise InternalError("{} requested more data when at EOF".format(g))
-        if e_count is False:
+        if e_count != count:
           break
         found = True
         break

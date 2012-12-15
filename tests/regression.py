@@ -36,3 +36,14 @@ class TestIssue4 (util.TestCase):
     grammar = GRAMMAR('A', whitespace=True)
     list(grammar.parser().parse_lines(["A "], eof=True))
 
+class TestIssue10 (util.TestCase):
+  """
+  Issue 10: EXCEPT incorrectly matches on prefixes of the result
+  """
+
+  def test_except_prefix(self):
+    grammar = EXCEPT('foobar', 'foo')
+    try:
+      o = grammar.parser().parse_string('foobar')
+    except ParseError:
+      self.fail("EXCEPT incorrectly matching on substring")
