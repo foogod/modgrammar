@@ -1,6 +1,7 @@
 import sys
 import re
 import textwrap
+import warnings
 from . import util
 from .util import error_result
 
@@ -852,41 +853,43 @@ class Grammar (metaclass=GrammarClass):
     """
     pass
 
-  def get_all(self, *type_path):
+  def get_all(self, *tt_path):
     """
-    Return all immediate sub-elements of the given type.
+    Return all immediate sub-elements of the given type, or posessing the given tag.
 
-    If more than one type parameter is provided, it will treat the types as a "path" to traverse: for all sub-elements matching the first type, retrieve all sub-elements of those matching the second type, and so on, until it reaches the last type in the list.  (It will thus return all elements of the parse tree which are of the final type, which can be reached by traversing the previous types in order.)
+    If more than one type/tag parameter is provided, it will treat the types as a "path" to traverse: for all sub-elements matching the first type/tag, retrieve all sub-elements of those matching the second type/tag, and so on, until it reaches the last type/tag in the list.  (It will thus return all elements of the parse tree which are of the final type/tag, which can be reached by traversing the previous types/tags in order.)
+
+    Note that types and tags can be intermingled, as well.
     """
-    return list(self._search_recursive(isinstance, False, type_path))
+    return list(self._search_recursive(util.find_match_func, False, tt_path))
 
-  def get(self, *type_path):
+  def get(self, *tt_path):
     """
-    Return the first immediate sub-element of the given type (or by descending through multiple types, in the same way as :meth:`get_all`).
+    Return the first immediate sub-element of the given type/tag (or by descending through multiple types/tags, in the same way as :meth:`get_all`).
 
-    This is equivalent to ``.get_all(*type_path)[0]`` except that it is more efficient, and will return :const:`None` if there are no such objects (instead of raising :exc:`IndexError`).
+    This is equivalent to ``.get_all(*tt_path)[0]`` except that it is more efficient, and will return :const:`None` if there are no such objects (instead of raising :exc:`IndexError`).
     """
     try:
-      return next(self._search_recursive(isinstance, False, type_path))
+      return next(self._search_recursive(util.find_match_func, False, tt_path))
     except StopIteration:
       return None
 
-  def find_all(self, *type_path):
+  def find_all(self, *tt_path):
     """
-    Return all elements anywhere in the parse tree matching the given type.
+    Return all elements anywhere in the parse tree matching the given type/tag.
 
-    Similar to :meth:`get_all`, if more than one type parameter is provided, it will treat the types as a "path" to traverse in order.  The difference from :meth:`get_all` is that, for each step in the path, the elements found do not have to be direct sub-elements, but can be anywhere in the sub-tree.
+    Similar to :meth:`get_all`, if more than one type/tag parameter is provided, it will treat them as a "path" to traverse in order.  The difference from :meth:`get_all` is that, for each step in the path, the elements found do not have to be direct sub-elements, but can be anywhere in the sub-tree.
     """
-    return list(self._search_recursive(isinstance, True, type_path))
+    return list(self._search_recursive(util.find_match_func, True, tt_path))
 
-  def find(self, *type_path):
+  def find(self, *tt_path):
     """
-    Return the first element anywhere in the parse tree matching the given type (or by descending through multiple types, in the same way as :meth:`find_all`).
+    Return the first element anywhere in the parse tree matching the given type/tag (or by descending through multiple types/tags, in the same way as :meth:`find_all`).
 
-    This is equivalent to ``.find_all(*type_path)[0]`` except that it is more efficient, and will return :const:`None` if there are no such objects (instead of raising :exc:`IndexError`).
+    This is equivalent to ``.find_all(*tt_path)[0]`` except that it is more efficient, and will return :const:`None` if there are no such objects (instead of raising :exc:`IndexError`).
     """
     try:
-      return next(self._search_recursive(isinstance, True, type_path))
+      return next(self._search_recursive(util.find_match_func, True, tt_path))
     except StopIteration:
       return None
 
@@ -894,8 +897,9 @@ class Grammar (metaclass=GrammarClass):
     """
     Return all elements anywhere in the parse tree with the given tag.
 
-    This functions identically to :meth:`find_all`, except that the criteria for matching is based on tags, rather than object types.
+    Note: This method is deprecated.  Its functionality is now part of :meth:`find_all` instead.
     """
+    warnings.warn("find_tag_all is deprecated: Use find_all instead.", DeprecationWarning, stacklevel=2)
     func = lambda e, l: l in getattr(e, "grammar_tags", ())
     return list(self._search_recursive(func, True, tag_path))
 
@@ -903,8 +907,9 @@ class Grammar (metaclass=GrammarClass):
     """
     Return the first element anywhere in the parse tree with the given tag (or by descending through multiple tags, in the same way as :meth:`find_tag_all`).
 
-    This is equivalent to ``.find_tag_all(*tag_path)[0]`` except that it is more efficient, and will return :const:`None` if there are no such objects (instead of raising :exc:`IndexError`).
+    Note: This method is deprecated.  Its functionality is now part of :meth:`find` instead.
     """
+    warnings.warn("find_tag is deprecated: Use find instead.", DeprecationWarning, stacklevel=2)
     func = lambda e, l: l in getattr(e, "grammar_tags", ())
     try:
       return next(self._search_recursive(func, True, tag_path))
@@ -946,7 +951,13 @@ class Grammar (metaclass=GrammarClass):
     return [e.string for e in self.terminals()]
 
   def __getitem__(self, index):
-    return self.elements[index]
+    if isinstance(index, int):
+      return self.elements[index]
+    else:
+      e = self.get(index)
+      if e is not None:
+        return e
+      raise IndexError('no subgrammar matching {!r} found'.format(index))
 
   def __len__(self):
     return len(self.string)

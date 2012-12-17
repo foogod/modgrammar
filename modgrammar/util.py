@@ -156,3 +156,12 @@ def ebnf_specialseq(grammar, opts, name=None, details=None, desc=None):
     if not text:
       text = name or grammar.grammar_name
   return '? {} ?'.format(text)
+
+def find_match_func(elem, type_or_tag):
+  try:
+    if isinstance(elem, type_or_tag):
+      return True
+  except TypeError:
+    pass
+  return type_or_tag in getattr(elem, "grammar_tags", ())
+
