@@ -47,3 +47,14 @@ class TestIssue10 (util.TestCase):
       o = grammar.parser().parse_string('foobar')
     except ParseError:
       self.fail("EXCEPT incorrectly matching on substring")
+
+class TestIssue8 (util.TestCase):
+  """
+  Issue 8: Grammars with NOT_FOLLOWED_BY don't correctly return a parse error
+           before terminating the generator
+  """
+
+  def test_iteration_not_followed_by(self):
+    grammar = G('A', NOT_FOLLOWED_BY('A'))
+    o = grammar.parser().parse_string('AB', matchtype='all')
+    self.assertEqual([x.string for x in o], ['A'])

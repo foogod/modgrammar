@@ -1212,6 +1212,9 @@ class NotFollowedBy (Grammar):
     else:
       # Subgrammar did not match.  Return a (successful) None match.
       yield (0, cls(''))
+      # If the caller proceeds to the next "match", we need to yield an error
+      # to indicate we're done with matching.
+      yield error_result(index, cls)
     
   @classmethod
   def grammar_details(cls, depth=-1, visited=None):
@@ -1284,7 +1287,7 @@ class ExceptionGrammar (Grammar):
     # In some cases, our "best error" can lead to really confusing messages,
     # since it may say "expected foo" at a place where foo actually WAS found
     # (because the exclusion grammar prevented it from being returned).  If
-    # this is the case (we"re returning a best error at our own starting
+    # this is the case (we're returning a best error at our own starting
     # position) return ourselves as the error object, so at least it will be
     # obvious there were extra conditions on the match that weren't fulfilled.
     if best_error[0] == index:
