@@ -1404,18 +1404,21 @@ class Repetition (Grammar):
   def grammar_ebnf_rhs(cls, opts):
     return None
 
-def WORD(startchars, restchars=None, **kwargs):
+def WORD(startchars, restchars=None, longest=False, **kwargs):
   """
   Match any text consisting of a sequence of the specified characters.  If *restchars* is not provided, all characters in the sequence must be in the set specified by *startchars*.  If *restchars* is provided, then *startchars* specifies the valid options for the first character of the sequence, and *restchars* specifies the valid options for all following characters.
 
   *startchars* and *restchars* are each strings containing a sequence of individual characters, or character ranges, in the same format used by python regular expressions for character-range (``[]``) operations (i.e. ``"0123456789"`` or ``"A-Za-z"``).  If the first character of *startchars* or *restchars* is ``^``, the meaning is also inverted, just as in regular expressions, so ``"^A-Z"`` would match anything *except* an upper-case ascii alphabet character.
+
+  If *longest* is true, then this construct will only match the longest possible sequence of matching characters in the input, and will not try to match any shorter sub-sequences (even if they would work better in the context of the larger grammar).  Effectively, this means any match returned is guaranteed to be followed by a non-word character or token.
   """
-  cdict = util.make_classdict(Word, (), kwargs, startchars=startchars, restchars=restchars)
+  cdict = util.make_classdict(Word, (), kwargs, startchars=startchars, restchars=restchars, longest_only=longest)
   return GrammarClass("<WORD>", (Word,), cdict)
 
 class Word (Terminal):
   startchars = ""
   restchars = None
+  longest_only = False
   grammar_count = None
   grammar_min = 1
   grammar_max = None
@@ -1462,11 +1465,13 @@ class Word (Terminal):
       argspec += ", min={}".format(min)
     if max:
       argspec += ", max={}".format(max)
+    if cls.longest_only:
+      argspec += ", longest=True"
     return "WORD({})".format(argspec)
 
   @classmethod
   def grammar_parse(cls, text, index, sessiondata):
-    greedy = cls.grammar_greedy
+    greedy = cls.grammar_greedy or cls.longest_only
     returned = cls.grammar_min - 1
     while True:
       string = text.string
@@ -1486,6 +1491,8 @@ class Word (Terminal):
     if greedy:
       while matchlen >= cls.grammar_min:
         yield (matchlen, cls(string, index, index+matchlen))
+        if cls.longest_only:
+          break
         matchlen -= 1
     yield error_result(index, cls)
 

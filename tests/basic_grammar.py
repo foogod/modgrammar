@@ -450,6 +450,30 @@ class TestWord2 (util.BasicGrammarTestCase):
     o = p.parse_string('Abcade')
     self.assertEqual(o.tokens(), ['', 'A'])
 
+class TestWord3 (util.BasicGrammarTestCase):
+  def setUp(self):
+    self.grammar = WORD('a-z', min=2, max=5, longest=True)
+    self.grammar_name = "WORD('a-z')"
+    self.grammar_details = "WORD('a-z', min=2, max=5, longest=True)"
+    self.matches = ('abcde',)
+    self.matches_with_remainder = ('abcdef', 'ab#cd')
+    self.fail_matches = ('Abcd', '\nabcde', 'a bcd')
+    self.partials = (('a', 'b', 'c', 'd', 'e'), ('a', 'b', '#'))
+    self.fail_partials = (('a', '#'),)
+
+  # There should be no backtracking on longest=True WORD grammars
+  def test_backtrack(self):
+    g = GRAMMAR(self.grammar, 'a')
+    p = g.parser()
+    o = p.parse_string('abcdea')
+    self.assertEqual(o.tokens(), ['abcde', 'a'])
+    p.reset()
+    o = p.parse_string('abcd a')
+    self.assertEqual(o.tokens(), ['abcd', 'a'])
+    p.reset()
+    with self.assertRaises(ParseError):
+      p.parse_string('abcdab') # Would be OK except for longest=True
+
 class TestAnyExcept (util.BasicGrammarTestCase):
   def setUp(self):
     self.grammar = ANY_EXCEPT('a-z')
