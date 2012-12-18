@@ -44,6 +44,12 @@ Class Attributes
 
       Note: In general, you will want to set this universally for your whole grammar.  The best way to do this is to define a ``grammar_whitespace`` module-level variable in the same module as your grammar classes are defined.  If this is present, it will be used as the default for all grammar classes in that module.
 
+   .. attribute:: Grammar.grammar_whitespace_required
+
+      If set to :const:`True`, this grammar will require that there always be some amount of whitespace between its sub-grammars (note that this only applies if grammar_whitespace is also enabled).  If set to :const:`False` (the default), whitespace between elements will be optional.
+
+      The :attr:`~Grammar.grammar_whitespace_required` attribute can be set in the same ways as :attr:`~Grammar.grammar_whitespace`.  In particular, it is possible to set a default for all grammars by defining it at the module-level, just like :attr:`~Grammar.grammar_whitespace`.
+
    There are also a few less-commonly-used class attributes which may be useful when inspecting grammars, or may be overridden in special cases:
 
    .. attribute:: Grammar.grammar_terminal
@@ -140,15 +146,16 @@ The following basic grammar classes/factories are provided from which more compl
 
    .. table::
 
-      =============== ======================================
-      Keyword         Class Attribute
-      =============== ======================================
-      *collapse*      :attr:`~Grammar.grammar_collapse`
-      *collapse_skip* :attr:`~Grammar.grammar_collapse_skip`
-      *greedy*        :attr:`~Grammar.grammar_greedy`
-      *tags*          :attr:`~Grammar.grammar_tags`
-      *whitespace*    :attr:`~Grammar.grammar_whitespace`
-      =============== ======================================
+      ===================== ======================================
+      Keyword               Class Attribute
+      ===================== ======================================
+      *collapse*            :attr:`~Grammar.grammar_collapse`
+      *collapse_skip*       :attr:`~Grammar.grammar_collapse_skip`
+      *greedy*              :attr:`~Grammar.grammar_greedy`
+      *tags*                :attr:`~Grammar.grammar_tags`
+      *whitespace*          :attr:`~Grammar.grammar_whitespace`
+      *whitespace_required* :attr:`~Grammar.grammar_whitespace_required`
+      ===================== ======================================
 
 .. autofunction:: GRAMMAR
 .. function:: G(*subgrammars, **kwargs)

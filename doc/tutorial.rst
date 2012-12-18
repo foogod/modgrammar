@@ -333,6 +333,8 @@ Tip: Even if you do want your grammars to skip whitespace, it's a good idea to s
 
 It is also possible to configure your grammars to consume whitespace, but specify a different criteria for what constitutes "whitespace".  For example, you may want to automatically skip over spaces and tabs, but not line-end characters.  To do this, instead of setting *grammar_whitespace* to :const:`True` or :const:`False`, you can set it to a regular expression object instead (see the :mod:`re` module for more info on regular expressions).  In this case, the provided regular expression will be used to determine how much (if any) of the string should be skipped over to get to the next token.
 
+But what if you want your grammars to *require* whitespace between tokens (for example, if you have a grammar which is all made up of english words)?  You can do that too.  Simply set *grammar_whitespace* to :const:`True` (or a regular expression) and then set *grammar_whitespace_required* to :const:`True` as well.  Like before, this will allow any amount of whitespace between tokens (whatever you've defined "whitespace" to be), but will require that all tokens must have at least *some* whitespace between them.  (Like *grammar_whitespace*, *grammar_whitespace_required* can be set for all your grammars by setting it at the module-level, as well)
+
 Greed Is Good (But Not Always)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

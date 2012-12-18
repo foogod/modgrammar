@@ -24,6 +24,10 @@ class G3 (Grammar):
   grammar = ('ABC', 'DEF')
   grammar_whitespace = False
 
+class G4 (Grammar):
+  grammar = ('ABC', 'DEF')
+  grammar_whitespace_required = True
+
 class TestG1 (util.BasicGrammarTestCase):
   def setUp(self):
     self.grammar = G1
@@ -62,6 +66,18 @@ class TestG3 (util.BasicGrammarTestCase):
     self.matches = ('ABCDEF',)
     self.fail_matches = ('ABC DEF',)
 
+class TestG4 (util.BasicGrammarTestCase):
+  # For this, we're just checking that if grammar_whitespace_required=True, it
+  # won't match if there is NOT whitespace between tokens.
+  def setUp(self):
+    self.grammar = G4
+    self.grammar_name = "G4"
+    self.grammar_details = "(L('ABC'), L('DEF'))"
+    self.terminal = False
+    self.subgrammar_types = (Literal, Literal)
+    self.matches = ('ABC DEF',)
+    self.fail_matches = ('ABCDEF',)
+
 class TestGRAMMAR (util.BasicGrammarTestCase):
   def setUp(self):
     self.grammar = GRAMMAR('ABC', 'DEF')
@@ -93,6 +109,18 @@ class TestGRAMMAR_NoWS (util.BasicGrammarTestCase):
     self.subgrammar_types = (Literal, Literal)
     self.matches = ('ABCDEF',)
     self.fail_matches = ('ABC DEF',)
+
+class TestGRAMMAR_WSReq (util.BasicGrammarTestCase):
+  # For this, we're just checking that if grammar_whitespace_required=True, it
+  # won't match if there is NOT whitespace between tokens.
+  def setUp(self):
+    self.grammar = GRAMMAR('ABC', 'DEF', whitespace_required=True)
+    self.grammar_name = "<GRAMMAR>"
+    self.grammar_details = "(L('ABC'), L('DEF'))"
+    self.terminal = False
+    self.subgrammar_types = (Literal, Literal)
+    self.matches = ('ABC DEF',)
+    self.fail_matches = ('ABCDEF',)
 
 class TestLiteral (util.BasicGrammarTestCase):
   def setUp(self):
@@ -242,6 +270,19 @@ class TestRepeat1_NoWS (util.BasicGrammarTestCase):
     self.partials = (('ABC', 'ABC', 'x'), ('ABCABC', 'x'), ('AB', 'CA', 'BC', 'x'), ('ABCABC', 'ABCABC', 'ABC'))
     self.fail_partials = (('ABC', 'ABx'), ('ABC ',), ('ABC', ' ABC'), ('ABC', ' '))
 
+class TestRepeat1_WSReq (util.BasicGrammarTestCase):
+  def setUp(self):
+    self.grammar = REPEAT('ABC', min=3, max=5, whitespace_required=True)
+    self.grammar_name = "<REPEAT>"
+    self.grammar_details = "REPEAT(L('ABC'), min=3, max=5)"
+    self.subgrammar_types = (Literal, Literal, Literal, Literal, Literal)
+    self.terminal = False
+    self.matches = ('ABC ABC ABC ABC ABC',)
+    self.matches_with_remainder = ('ABC ABC ABCx', 'ABC ABC ABC x', 'ABC ABC ABC ABx')
+    self.fail_matches = ('ABC ABCABC', 'ABCABC ABC', 'ABC ABCx')
+    self.partials = (('ABC', ' ABC', ' ', 'ABC', 'x'), ('ABC ABC ', 'ABC', 'x'), ('AB', 'C A', 'BC', ' A', 'BC', 'x'), ('ABC ABC', ' ABC ABC', ' ABC'))
+    self.fail_partials = (('ABC', 'ABC'), ('ABC ', 'x'), ('ABC', 'A'))
+
 class TestOptional (util.BasicGrammarTestCase):
   def setUp(self):
     self.grammar = OPTIONAL('ABC')
@@ -357,6 +398,22 @@ class TestList_NoWS (util.BasicGrammarTestCase):
     self.matches = ('ABC,ABC,ABC',)
     self.fail_matches = ('ABC ,ABC,ABC', 'ABC, ABC,ABC')
     self.fail_partials = (('ABC ',), ('ABC', ' ,'), ('ABC', ', '), ('ABC', ',', ' ABC'))
+
+  def num_tokens_for(self, teststr):
+    numtok = len(teststr.split(','))*2 - 1
+    return (numtok, numtok)
+
+class TestList_WSReq (util.BasicGrammarTestCase):
+  def setUp(self):
+    self.grammar = LIST_OF('ABC', count=3, whitespace_required=True)
+    self.grammar_name = "<LIST>"
+    self.grammar_details = "LIST_OF(L('ABC'), sep=L(','), count=3)"
+    self.subgrammar_types = (Literal, AnonGrammar, AnonGrammar)
+    self.terminal = False
+    self.matches = ('ABC , ABC , ABC',)
+    self.fail_matches = ('ABC,ABC , ABC', 'ABC, ABC , ABC', 'ABC ,ABC , ABC')
+    self.partials = (('ABC', ' ', ',', ' ', 'ABC , ABC'), ('A', 'B', 'C', ' , ', 'ABC ', ',', ' ABC'))
+    self.fail_partials = (('ABC', ','), ('ABC', ' ,', 'ABC'), ('ABC', ' ', ',', 'ABC'))
 
   def num_tokens_for(self, teststr):
     numtok = len(teststr.split(','))*2 - 1

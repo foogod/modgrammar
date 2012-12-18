@@ -29,6 +29,7 @@ __all__ = [
 ]
 
 grammar_whitespace = True
+grammar_whitespace_required = False
 
 class _Singleton:
   def __init__(self, name):
@@ -175,6 +176,9 @@ class GrammarClass (type):
     if "grammar_whitespace" not in classdict and cls.grammar_whitespace is None:
       whitespace = sys.modules[cls.__module__].__dict__.get("grammar_whitespace", grammar_whitespace)
       cls.grammar_whitespace = whitespace
+    if "grammar_whitespace_required" not in classdict and cls.grammar_whitespace_required is None:
+      whitespace_reqd = sys.modules[cls.__module__].__dict__.get("grammar_whitespace_required", grammar_whitespace_required)
+      cls.grammar_whitespace_required = whitespace_reqd
     cls.__class_init__(classdict)
 
   def __reduce__(cls):
@@ -543,8 +547,9 @@ class Grammar (metaclass=GrammarClass):
   grammar_greedy = True
   grammar_null_subtoken_ok = True
   grammar_whitespace = None
+  grammar_whitespace_required = None
   grammar_error_override = False
-  grammar_hashattrs = ('grammar_name', 'grammar', 'grammar_min', 'grammar_max', 'grammar_collapse', 'grammar_greedy', 'grammar_whitespace')
+  grammar_hashattrs = ('grammar_name', 'grammar', 'grammar_min', 'grammar_max', 'grammar_collapse', 'grammar_greedy', 'grammar_whitespace', 'grammar_whitespace_required')
 
   @classmethod
   def __class_init__(cls, attrs):
@@ -582,6 +587,7 @@ class Grammar (metaclass=GrammarClass):
       whitespace_re = util._whitespace_re
     else:
       whitespace_re = cls.grammar_whitespace
+    whitespace_reqd = cls.grammar_whitespace_required
     objs = []
     states = []
     positions = []
@@ -612,6 +618,14 @@ class Grammar (metaclass=GrammarClass):
             if pos < len(text.string) or text.eof:
               break
             text = yield (None, None)
+          if whitespace_reqd and objs and pos == prews_pos:
+	    # We didn't match any whitespace before the next sub-grammar, but
+	    # whitespace is required between sub-grammars.  Handle this as if
+	    # there were a SPACE grammar in this spot that gave us back an
+	    # error result.
+            obj = util.error_result(pos, SPACE)[1]
+            best_error = util.update_best_error(best_error, obj)
+            break
         if first_pos is None:
           first_pos = pos
         s = grammar[len(objs)].grammar_parse(text, pos, sessiondata)
@@ -997,6 +1011,7 @@ class Grammar (metaclass=GrammarClass):
 
 class AnonGrammar (Grammar):
   grammar_whitespace = None
+  grammar_whitespace_required = None
 
   @classmethod
   def grammar_details(cls, depth=-1, visited=None):
@@ -1335,6 +1350,7 @@ class Repetition (Grammar):
   grammar_min = 1
   grammar_max = None
   grammar_whitespace = None
+  grammar_whitespace_required = None
   
   @classmethod
   def __class_init__(cls, attrs):
@@ -1602,13 +1618,14 @@ class ListRepetition (Repetition):
   sep = LITERAL(",")
   grammar_min = 1
   grammar_whitespace = None
+  grammar_whitespace_required = None
 
   @classmethod
   def __class_init__(cls, attrs):
     grammar = GRAMMAR(cls.grammar)
     Repetition.__class_init__.__func__(cls, attrs)
     cls.sep = GRAMMAR(cls.sep)
-    succ_grammar = GRAMMAR(cls.sep, grammar, whitespace=cls.grammar_whitespace)
+    succ_grammar = GRAMMAR(cls.sep, grammar, whitespace=cls.grammar_whitespace, whitespace_required=cls.grammar_whitespace_required)
     cls.grammar = util.RepeatingTuple(grammar, succ_grammar, len=cls.grammar_max)
 
   @classmethod
