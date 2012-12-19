@@ -3,5 +3,5 @@ include README CHANGELOG
 recursive-include modgrammar *.py
 recursive-include tests *.py
 recursive-include doc *
-include doc/_static
-global-exclude [/\].*
+include modgrammar/.ignore # This is just to shut up the following line
+global-exclude /.*
