@@ -172,6 +172,8 @@ class GrammarClass (type):
     if "grammar_whitespace_required" not in classdict and cls.grammar_whitespace_required is None:
       whitespace_reqd = sys.modules[cls.__module__].__dict__.get("grammar_whitespace_required", grammar_whitespace_required)
       cls.grammar_whitespace_required = whitespace_reqd
+    if cls.grammar_whitespace_required and not cls.grammar_whitespace:
+      cls.grammar_whitespace = True
     cls.__class_init__(classdict)
 
   def __reduce__(cls):
