@@ -4,6 +4,8 @@ import sys
 
 import modgrammar
 
+PARSEERROR_FOUNDTXT_LEN = 16
+
 _whitespace_re = re.compile('\s+')
 
 def update_best_error(current_best, err):
@@ -179,3 +181,20 @@ def find_match_func(elem, type_or_tag):
     pass
   return type_or_tag in getattr(elem, "grammar_tags", ())
 
+def get_found_txt(buf, pos):
+  end = min(len(buf), pos + PARSEERROR_FOUNDTXT_LEN)
+  if end == pos:
+    return "(end of input)"
+  try:
+    end = min(end, buf.index('\n', pos))
+  except ValueError:
+    pass
+  try:
+    end = min(end, buf.index('\r', pos))
+  except ValueError:
+    pass
+  found_txt = buf[pos:end]
+  if found_txt:
+    return repr(found_txt)
+  else:
+    return "(end of line)"

@@ -40,8 +40,6 @@ class _Singleton:
 
 DEFAULT = _Singleton("DEFAULT") # singleton used for detecting default arguments
 
-PARSEERROR_FOUNDTXT_LEN = 16
-
 def _gclass_reconstructor(name, bases, cdict):
   return GrammarClass(name, bases, cdict)
 
@@ -126,12 +124,7 @@ class ParseError (Exception):
         message = ""
       else:
         expected_txt = " or ".join(sorted(e.grammar_desc for e in expected))
-        end = min(len(buf), pos + PARSEERROR_FOUNDTXT_LEN)
-        found_txt = buf[pos:end]
-        if found_txt:
-          found_txt = repr(found_txt)
-        else:
-          found_txt = "(end of input)"
+        found_txt = util.get_found_txt(buf, pos)
         message = "Expected {}: Found {}".format(expected_txt, found_txt)
     self.buffer = buf
     self.buffer_pos = pos
