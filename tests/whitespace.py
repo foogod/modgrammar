@@ -15,6 +15,18 @@ WSRE = re.compile('-*')
 # correctly on parsing should be tested in the basic_grammar tests.
 ###############################################################################
 
+# Note: The following grammars are predefined constants and thus don't have the
+# ability to change their grammar_whitespace based on module setting, etc.
+# This is ok, because these are all 'explicit' mode anyway (verified in
+# whitespace_mode.py tests), so we don't care what their grammar_whitespace is
+# set to:
+#   SPACE
+#   ANY
+#   EOL
+#   EOF
+#   EMPTY
+#   REST_OF_LINE
+
 class G_Default (Grammar):
   grammar = (ONE_OR_MORE('A'), 'B')
 
@@ -36,8 +48,20 @@ default_grammars = (
   ("ZERO_OR_MORE(L('A'))", ZERO_OR_MORE(L('A')), True),
   ("ONE_OR_MORE(L('A'))", ONE_OR_MORE(L('A')), True),
   ("LIST_OF(L('A'), sep=L('A'))", LIST_OF(L('A'), sep=L('A')), True),
+  ("LITERAL('A')", LITERAL('A'), True),
+  ("L('A')", L('A'), True),
+  ("WORD('A')", WORD('A'), True),
+  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), True),
+  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), True),
+  ("L('A') | L('B')", L('A') | L('B'), True),
+  ("OPTIONAL(L('A'))", OPTIONAL(L('A')), True),
+  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), True),
+  # GRAMMAR with a single element just returns that element, so the following
+  # should resolve to LITERALs:
+  ("GRAMMAR('A')", GRAMMAR('A'), True),
+  ("G('A')", G('A'), True),
 
-  # explicit False:
+  # Override False:
   ("GRAMMAR('A', whitespace=False)", GRAMMAR('A', whitespace=False), False),
   ("G('A', whitespace=False)", G('A', whitespace=False), False),
   ("LITERAL('A', whitespace=False)", LITERAL('A', whitespace=False), False),
@@ -52,7 +76,7 @@ default_grammars = (
   ("ONE_OR_MORE(L('A'), whitespace=False)", ONE_OR_MORE(L('A'), whitespace=False), False),
   ("LIST_OF(L('A'), sep=L('A'), whitespace=False)", LIST_OF(L('A'), sep=L('A'), whitespace=False), False),
 
-  # explicit True:
+  # Override True:
   ("GRAMMAR('A', whitespace=True)", GRAMMAR('A', whitespace=True), True),
   ("G('A', whitespace=True)", G('A', whitespace=True), True),
   ("LITERAL('A', whitespace=True)", LITERAL('A', whitespace=True), True),
@@ -66,27 +90,6 @@ default_grammars = (
   ("ZERO_OR_MORE(L('A'), whitespace=True)", ZERO_OR_MORE(L('A'), whitespace=True), True),
   ("ONE_OR_MORE(L('A'), whitespace=True)", ONE_OR_MORE(L('A'), whitespace=True), True),
   ("LIST_OF(L('A'), sep=L('A'), whitespace=True)", LIST_OF(L('A'), sep=L('A'), whitespace=True), True),
-
-  # Always false by default:
-  ("LITERAL('A')", LITERAL('A'), False),
-  ("L('A')", L('A'), False),
-  ("WORD('A')", WORD('A'), False),
-  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), False),
-  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), False),
-  ("L('A') | L('B')", L('A') | L('B'), False),
-  ("OPTIONAL(L('A'))", OPTIONAL(L('A')), False),
-  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), False),
-  ("ANY", ANY, False),
-  ("EOL", EOL, False),
-  ("EOF", EOF, False),
-  ("EMPTY", EMPTY, False),
-  ("REST_OF_LINE", REST_OF_LINE, False),
-  ("SPACE", SPACE, False),
-
-  # GRAMMAR with a single element just returns that element, so the following
-  # should resolve to LITERALs, which are always false by default.
-  ("GRAMMAR('A')", GRAMMAR('A'), False),
-  ("G('A')", G('A'), False),
 )
 
 grammar_whitespace = False
@@ -112,8 +115,20 @@ modfalse_grammars = (
   ("ZERO_OR_MORE(L('A'))", ZERO_OR_MORE(L('A')), False),
   ("ONE_OR_MORE(L('A'))", ONE_OR_MORE(L('A')), False),
   ("LIST_OF(L('A'), sep=L('A'))", LIST_OF(L('A'), sep=L('A')), False),
+  ("LITERAL('A')", LITERAL('A'), False),
+  ("L('A')", L('A'), False),
+  ("WORD('A')", WORD('A'), False),
+  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), False),
+  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), False),
+  ("L('A') | L('B')", L('A') | L('B'), False),
+  ("OPTIONAL(L('A'))", OPTIONAL(L('A')), False),
+  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), False),
+  # GRAMMAR with a single element just returns that element, so the following
+  # should resolve to LITERALs:
+  ("GRAMMAR('A')", GRAMMAR('A'), False),
+  ("G('A')", G('A'), False),
 
-  # explicit False:
+  # Override False:
   ("GRAMMAR('A', whitespace=False)", GRAMMAR('A', whitespace=False), False),
   ("G('A', whitespace=False)", G('A', whitespace=False), False),
   ("LITERAL('A', whitespace=False)", LITERAL('A', whitespace=False), False),
@@ -128,7 +143,7 @@ modfalse_grammars = (
   ("ONE_OR_MORE(L('A'), whitespace=False)", ONE_OR_MORE(L('A'), whitespace=False), False),
   ("LIST_OF(L('A'), sep=L('A'), whitespace=False)", LIST_OF(L('A'), sep=L('A'), whitespace=False), False),
 
-  # explicit True:
+  # Override True:
   ("GRAMMAR('A', whitespace=True)", GRAMMAR('A', whitespace=True), True),
   ("G('A', whitespace=True)", G('A', whitespace=True), True),
   ("LITERAL('A', whitespace=True)", LITERAL('A', whitespace=True), True),
@@ -142,27 +157,6 @@ modfalse_grammars = (
   ("ZERO_OR_MORE(L('A'), whitespace=True)", ZERO_OR_MORE(L('A'), whitespace=True), True),
   ("ONE_OR_MORE(L('A'), whitespace=True)", ONE_OR_MORE(L('A'), whitespace=True), True),
   ("LIST_OF(L('A'), sep=L('A'), whitespace=True)", LIST_OF(L('A'), sep=L('A'), whitespace=True), True),
-
-  # Always false by default:
-  ("LITERAL('A')", LITERAL('A'), False),
-  ("L('A')", L('A'), False),
-  ("WORD('A')", WORD('A'), False),
-  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), False),
-  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), False),
-  ("L('A') | L('B')", L('A') | L('B'), False),
-  ("OPTIONAL(L('A'))", OPTIONAL(L('A')), False),
-  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), False),
-  ("ANY", ANY, False),
-  ("EOL", EOL, False),
-  ("EOF", EOF, False),
-  ("EMPTY", EMPTY, False),
-  ("REST_OF_LINE", REST_OF_LINE, False),
-  ("SPACE", SPACE, False),
-
-  # GRAMMAR with a single element just returns that element, so the following
-  # should resolve to LITERALs, which are always false by default.
-  ("GRAMMAR('A')", GRAMMAR('A'), False),
-  ("G('A')", G('A'), False),
 )
 
 grammar_whitespace = True
@@ -188,8 +182,20 @@ modtrue_grammars = (
   ("ZERO_OR_MORE(L('A'))", ZERO_OR_MORE(L('A')), True),
   ("ONE_OR_MORE(L('A'))", ONE_OR_MORE(L('A')), True),
   ("LIST_OF(L('A'), sep=L('A'))", LIST_OF(L('A'), sep=L('A')), True),
+  ("LITERAL('A')", LITERAL('A'), True),
+  ("L('A')", L('A'), True),
+  ("WORD('A')", WORD('A'), True),
+  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), True),
+  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), True),
+  ("L('A') | L('B')", L('A') | L('B'), True),
+  ("OPTIONAL(L('A'))", OPTIONAL(L('A')), True),
+  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), True),
+  # GRAMMAR with a single element just returns that element, so the following
+  # should resolve to LITERALs:
+  ("GRAMMAR('A')", GRAMMAR('A'), True),
+  ("G('A')", G('A'), True),
 
-  # explicit False:
+  # Override False:
   ("GRAMMAR('A', whitespace=False)", GRAMMAR('A', whitespace=False), False),
   ("G('A', whitespace=False)", G('A', whitespace=False), False),
   ("LITERAL('A', whitespace=False)", LITERAL('A', whitespace=False), False),
@@ -204,7 +210,7 @@ modtrue_grammars = (
   ("ONE_OR_MORE(L('A'), whitespace=False)", ONE_OR_MORE(L('A'), whitespace=False), False),
   ("LIST_OF(L('A'), sep=L('A'), whitespace=False)", LIST_OF(L('A'), sep=L('A'), whitespace=False), False),
 
-  # explicit True:
+  # Override True:
   ("GRAMMAR('A', whitespace=True)", GRAMMAR('A', whitespace=True), True),
   ("G('A', whitespace=True)", G('A', whitespace=True), True),
   ("LITERAL('A', whitespace=True)", LITERAL('A', whitespace=True), True),
@@ -218,27 +224,6 @@ modtrue_grammars = (
   ("ZERO_OR_MORE(L('A'), whitespace=True)", ZERO_OR_MORE(L('A'), whitespace=True), True),
   ("ONE_OR_MORE(L('A'), whitespace=True)", ONE_OR_MORE(L('A'), whitespace=True), True),
   ("LIST_OF(L('A'), sep=L('A'), whitespace=True)", LIST_OF(L('A'), sep=L('A'), whitespace=True), True),
-
-  # Always false by default:
-  ("LITERAL('A')", LITERAL('A'), False),
-  ("L('A')", L('A'), False),
-  ("WORD('A')", WORD('A'), False),
-  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), False),
-  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), False),
-  ("L('A') | L('B')", L('A') | L('B'), False),
-  ("OPTIONAL(L('A'))", OPTIONAL(L('A')), False),
-  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), False),
-  ("ANY", ANY, False),
-  ("EOL", EOL, False),
-  ("EOF", EOF, False),
-  ("EMPTY", EMPTY, False),
-  ("REST_OF_LINE", REST_OF_LINE, False),
-  ("SPACE", SPACE, False),
-
-  # GRAMMAR with a single element just returns that element, so the following
-  # should resolve to LITERALs, which are always false by default.
-  ("GRAMMAR('A')", GRAMMAR('A'), False),
-  ("G('A')", G('A'), False),
 )
 
 grammar_whitespace = WSRE
@@ -264,8 +249,19 @@ modwsre_grammars = (
   ("ZERO_OR_MORE(L('A'))", ZERO_OR_MORE(L('A')), WSRE),
   ("ONE_OR_MORE(L('A'))", ONE_OR_MORE(L('A')), WSRE),
   ("LIST_OF(L('A'), sep=L('A'))", LIST_OF(L('A'), sep=L('A')), WSRE),
+  ("LITERAL('A')", LITERAL('A'), WSRE),
+  ("L('A')", L('A'), WSRE),
+  ("WORD('A')", WORD('A'), WSRE),
+  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), WSRE),
+  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), WSRE),
+  ("L('A') | L('B')", L('A') | L('B'), WSRE),
+  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), WSRE),
+  # GRAMMAR with a single element just returns that element, so the following
+  # should resolve to LITERALs:
+  ("GRAMMAR('A')", GRAMMAR('A'), WSRE),
+  ("G('A')", G('A'), WSRE),
 
-  # explicit False:
+  # Override False:
   ("GRAMMAR('A', whitespace=False)", GRAMMAR('A', whitespace=False), False),
   ("G('A', whitespace=False)", G('A', whitespace=False), False),
   ("LITERAL('A', whitespace=False)", LITERAL('A', whitespace=False), False),
@@ -280,7 +276,7 @@ modwsre_grammars = (
   ("ONE_OR_MORE(L('A'), whitespace=False)", ONE_OR_MORE(L('A'), whitespace=False), False),
   ("LIST_OF(L('A'), sep=L('A'), whitespace=False)", LIST_OF(L('A'), sep=L('A'), whitespace=False), False),
 
-  # explicit True:
+  # Override True:
   ("GRAMMAR('A', whitespace=True)", GRAMMAR('A', whitespace=True), True),
   ("G('A', whitespace=True)", G('A', whitespace=True), True),
   ("LITERAL('A', whitespace=True)", LITERAL('A', whitespace=True), True),
@@ -294,33 +290,14 @@ modwsre_grammars = (
   ("ZERO_OR_MORE(L('A'), whitespace=True)", ZERO_OR_MORE(L('A'), whitespace=True), True),
   ("ONE_OR_MORE(L('A'), whitespace=True)", ONE_OR_MORE(L('A'), whitespace=True), True),
   ("LIST_OF(L('A'), sep=L('A'), whitespace=True)", LIST_OF(L('A'), sep=L('A'), whitespace=True), True),
-
-  # Always false by default:
-  ("LITERAL('A')", LITERAL('A'), False),
-  ("L('A')", L('A'), False),
-  ("WORD('A')", WORD('A'), False),
-  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), False),
-  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), False),
-  ("L('A') | L('B')", L('A') | L('B'), False),
-  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), False),
-  ("ANY", ANY, False),
-  ("EOL", EOL, False),
-  ("EOF", EOF, False),
-  ("EMPTY", EMPTY, False),
-  ("REST_OF_LINE", REST_OF_LINE, False),
-  ("SPACE", SPACE, False),
-
-  # GRAMMAR with a single element just returns that element, so the following
-  # should resolve to LITERALs, which are always false by default.
-  ("GRAMMAR('A')", GRAMMAR('A'), False),
-  ("G('A')", G('A'), False),
 )
 
 class WhitespaceSettingTests (util.TestCase):
 
   def check_recursive(self, name, g, expected, expected_sub):
-    if g.grammar_whitespace != expected:
-      raise self.failureException("When testing {}: grammar_whitespace for {!r} is {!r}".format(name, g, g.grammar_whitespace))
+    if g.grammar_whitespace_mode != 'explicit':
+      if g.grammar_whitespace != expected:
+        raise self.failureException("When testing {}: grammar_whitespace for {!r} is {!r}".format(name, g, g.grammar_whitespace))
     if issubclass(g, ListRepetition):
       if g.grammar[1].grammar_whitespace != expected:
         raise self.failureException("When testing {}: grammar_whitespace for {!r} is {!r}".format(name, g.grammar[1], g.grammar[1].grammar_whitespace))
@@ -332,12 +309,7 @@ class WhitespaceSettingTests (util.TestCase):
         if len(g.grammar) > 1:
           sub_list.append(g.grammar[1])
     for sub_g in sub_list:
-      if issubclass(sub_g, (Terminal, OR_Operator)):
-        # Terminals (and OR constructs) always normally have grammar_whitespace
-        # set to False
-        self.check_recursive(name, sub_g, False, expected_sub)
-      else:
-        self.check_recursive(name, sub_g, expected_sub, expected_sub)
+      self.check_recursive(name, sub_g, expected_sub, expected_sub)
 
   def test_ws_default(self):
     for name, g, expected in default_grammars:
@@ -386,6 +358,7 @@ class TestWSNorm (util.BasicGrammarTestCase):
     self.fail_matches = ('A-BC', 'A-ABC', 'AB-C')
 
 class TestWSRE (util.BasicGrammarTestCase):
+  ws_strs = ('-',)
   def setUp(self):
     self.grammar = WSREGrammar
     self.grammar_name = "WSREGrammar"
@@ -397,6 +370,7 @@ class TestWSRE (util.BasicGrammarTestCase):
     self.fail_matches = ('A BC', 'A ABC', 'AB C')
 
 class TestWSMix (util.BasicGrammarTestCase):
+  ws_strs = (' ', '-')
   def setUp(self):
     self.grammar = WSMixGrammar
     self.grammar_name = "WSMixGrammar"

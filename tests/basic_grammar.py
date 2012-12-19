@@ -10,7 +10,7 @@ from . import util
 # * collapsing
 # * collapse_skip
 
-grammar_whitespace = True
+grammar_whitespace_mode = 'optional'
 
 NoneType = type(None)
 
@@ -22,11 +22,11 @@ class G2 (Grammar):
 
 class G3 (Grammar):
   grammar = ('ABC', 'DEF')
-  grammar_whitespace = False
+  grammar_whitespace_mode = 'explicit'
 
 class G4 (Grammar):
   grammar = ('ABC', 'DEF')
-  grammar_whitespace_required = True
+  grammar_whitespace_mode = 'required'
 
 class TestG1 (util.BasicGrammarTestCase):
   def setUp(self):
@@ -55,8 +55,8 @@ class TestG2 (util.BasicGrammarTestCase):
     self.fail_partials = (('A', 'B', 'C', 'D', 'E', 'X'), ('ABC', 'D', 'EX'), ('AB', 'XDEF'))
 
 class TestG3 (util.BasicGrammarTestCase):
-  # For this, we're just checking that if grammar_whitespace=False, it won't
-  # match if there's whitespace between tokens.
+  # For this, we're just checking that if grammar_whitespace_mode='explicit',
+  # it won't match if there's whitespace between tokens.
   def setUp(self):
     self.grammar = G3
     self.grammar_name = "G3"
@@ -67,8 +67,8 @@ class TestG3 (util.BasicGrammarTestCase):
     self.fail_matches = ('ABC DEF',)
 
 class TestG4 (util.BasicGrammarTestCase):
-  # For this, we're just checking that if grammar_whitespace_required=True, it
-  # won't match if there is NOT whitespace between tokens.
+  # For this, we're just checking that if grammar_whitespace_mode='required',
+  # it won't match if there is NOT whitespace between tokens.
   def setUp(self):
     self.grammar = G4
     self.grammar_name = "G4"
@@ -99,10 +99,10 @@ class TestGRAMMAR (util.BasicGrammarTestCase):
     self.assertTrue(issubclass(g, Literal))
 
 class TestGRAMMAR_NoWS (util.BasicGrammarTestCase):
-  # For this, we're just checking that if grammar_whitespace=False, it won't
-  # match if there's whitespace between tokens.
+  # For this, we're just checking that if grammar_whitespace_mode='explicit',
+  # it won't match if there's whitespace between tokens.
   def setUp(self):
-    self.grammar = GRAMMAR('ABC', 'DEF', whitespace=False)
+    self.grammar = GRAMMAR('ABC', 'DEF', whitespace_mode='explicit')
     self.grammar_name = "<GRAMMAR>"
     self.grammar_details = "(L('ABC'), L('DEF'))"
     self.terminal = False
@@ -111,10 +111,10 @@ class TestGRAMMAR_NoWS (util.BasicGrammarTestCase):
     self.fail_matches = ('ABC DEF',)
 
 class TestGRAMMAR_WSReq (util.BasicGrammarTestCase):
-  # For this, we're just checking that if grammar_whitespace_required=True, it
+  # For this, we're just checking that if grammar_whitespace_mode='required', it
   # won't match if there is NOT whitespace between tokens.
   def setUp(self):
-    self.grammar = GRAMMAR('ABC', 'DEF', whitespace_required=True)
+    self.grammar = GRAMMAR('ABC', 'DEF', whitespace_mode='required')
     self.grammar_name = "<GRAMMAR>"
     self.grammar_details = "(L('ABC'), L('DEF'))"
     self.terminal = False
@@ -259,7 +259,7 @@ class TestRepeat2 (util.BasicGrammarTestCase):
 
 class TestRepeat1_NoWS (util.BasicGrammarTestCase):
   def setUp(self):
-    self.grammar = REPEAT('ABC', min=2, max=5, whitespace=False)
+    self.grammar = REPEAT('ABC', min=2, max=5, whitespace_mode='explicit')
     self.grammar_name = "<REPEAT>"
     self.grammar_details = "REPEAT(L('ABC'), min=2, max=5)"
     self.subgrammar_types = (Literal, Literal, Literal, Literal, Literal)
@@ -272,7 +272,7 @@ class TestRepeat1_NoWS (util.BasicGrammarTestCase):
 
 class TestRepeat1_WSReq (util.BasicGrammarTestCase):
   def setUp(self):
-    self.grammar = REPEAT('ABC', min=3, max=5, whitespace_required=True)
+    self.grammar = REPEAT('ABC', min=3, max=5, whitespace_mode='required')
     self.grammar_name = "<REPEAT>"
     self.grammar_details = "REPEAT(L('ABC'), min=3, max=5)"
     self.subgrammar_types = (Literal, Literal, Literal, Literal, Literal)
@@ -390,7 +390,7 @@ class TestList2 (util.BasicGrammarTestCase):
 
 class TestList_NoWS (util.BasicGrammarTestCase):
   def setUp(self):
-    self.grammar = LIST_OF('ABC', count=3, whitespace=False)
+    self.grammar = LIST_OF('ABC', count=3, whitespace_mode='explicit')
     self.grammar_name = "<LIST>"
     self.grammar_details = "LIST_OF(L('ABC'), sep=L(','), count=3)"
     self.subgrammar_types = (Literal, AnonGrammar, AnonGrammar)
@@ -405,7 +405,7 @@ class TestList_NoWS (util.BasicGrammarTestCase):
 
 class TestList_WSReq (util.BasicGrammarTestCase):
   def setUp(self):
-    self.grammar = LIST_OF('ABC', count=3, whitespace_required=True)
+    self.grammar = LIST_OF('ABC', count=3, whitespace_mode='required')
     self.grammar_name = "<LIST>"
     self.grammar_details = "LIST_OF(L('ABC'), sep=L(','), count=3)"
     self.subgrammar_types = (Literal, AnonGrammar, AnonGrammar)
@@ -542,9 +542,9 @@ class TestAnyExcept (util.BasicGrammarTestCase):
 
   def test_pre_post_space(self):
     # This would normally fail the default pre/post space tests, because it has
-    # grammar_whitespace=False, but still matches fine if there's whitespace at
-    # the beginning (because whitespace characters match the ANY_EXCEPT
-    # criteria), so we'll just skip that test in this case.
+    # grammar_whitespace_mode='explicit', but still matches fine if there's
+    # whitespace at the beginning (because whitespace characters match the
+    # ANY_EXCEPT criteria), so we'll just skip that test in this case.
     pass
 
 class TestBOL (util.BasicGrammarTestCase):
@@ -565,7 +565,7 @@ class TestBOL (util.BasicGrammarTestCase):
     o = p.parse_string('a\na')
     self.assertIsNotNone(o)
     self.assertEqual(p.remainder(), 'a')
-    grammar = GRAMMAR(ANY, ANY, BOL, whitespace=False)
+    grammar = GRAMMAR(ANY, ANY, BOL, whitespace_mode='explicit')
     p = grammar.parser()
     o = p.parse_string('a\na')
     self.assertIsNotNone(o)
@@ -597,9 +597,9 @@ class TestRestOfLine (util.BasicGrammarTestCase):
 
   def test_pre_post_space(self):
     # This would normally fail the default pre/post space tests, because it has
-    # grammar_whitespace=False, but still matches fine if there's whitespace at
-    # the beginning (because whitespace characters match the REST_OF_LINE
-    # criteria), so we'll just skip that test in this case.
+    # grammar_whitespace_mode='explicit', but still matches fine if there's
+    # whitespace at the beginning (because whitespace characters match the
+    # REST_OF_LINE criteria), so we'll just skip that test in this case.
     pass
 
 class TestANY (util.BasicGrammarTestCase):
@@ -612,9 +612,9 @@ class TestANY (util.BasicGrammarTestCase):
 
   def test_pre_post_space(self):
     # This would normally fail the default pre/post space tests, because it has
-    # grammar_whitespace=False, but still matches if there's whitespace at
-    # the beginning (because whitespace characters match the ANY
-    # criteria), so we'll just skip that test in this case.
+    # grammar_whitespace_mode='explicit', but still matches fine if there's
+    # whitespace at the beginning (because whitespace characters match the
+    # ANY criteria), so we'll just skip that test in this case.
     # Actual testing of whitespace before/after a string is already handled by
     # the matches_with_remainder test cases.
     pass
@@ -630,9 +630,9 @@ class TestSpace (util.BasicGrammarTestCase):
 
   def test_pre_post_space(self):
     # This would normally fail the default pre/post space tests, because it has
-    # grammar_whitespace=False, but still matches fine if there's whitespace at
-    # the beginning (because whitespace characters match the SPACE
-    # criteria), so we'll just skip that test in this case.
+    # grammar_whitespace_mode='explicit', but still matches fine if there's
+    # whitespace at the beginning (because whitespace characters match the
+    # SPACE criteria), so we'll just skip that test in this case.
     pass
 
 class TestEOF (util.BasicGrammarTestCase):

@@ -45,6 +45,8 @@ class _AssertRaisesContext(object):
 
 
 class TestCase (unittest.TestCase):
+  ws_strs = (' ',)
+
   def assertRaises(self, excClass, callableObj=None, msg=None):
     context = _AssertRaisesContext(excClass, self, msg=msg)
     if callableObj is None:
@@ -277,27 +279,29 @@ class BasicGrammarTestCase (TestCase):
   def test_pre_post_space(self):
     try:
       p = self.grammar.parser()
-      if self.grammar.grammar_whitespace is True:
+      if self.grammar.grammar_whitespace_mode in ('optional', 'required'):
         for teststr in self.matches + self.matches_with_remainder:
-          msg = '[testcase={!r}]'.format(teststr)
-          p.reset()
-          teststr = ' ' + teststr + ' '
-          o = p.parse_string(teststr)
-          remainder = p.remainder()
-          self.assertNotEqual(remainder, '', msg)
-          self.check_result(teststr[:-len(remainder)], o, None, msg)
-      elif self.grammar.grammar_whitespace is False:
-        for teststr in self.matches + self.matches_with_remainder:
-          p.reset()
-          msg = '[testcase={!r}]'.format(teststr)
-          teststr = ' ' + teststr
-          try:
-            o = p.parse_string(teststr)
-          except ParseError:
-            pass
-          else:
+          for wstr in self.ws_strs:
+            p.reset()
+            wteststr = wstr + teststr + wstr
+            msg = '[testcase={!r}]'.format(wteststr)
+            o = p.parse_string(wteststr)
             remainder = p.remainder()
-            self.assertEqual(remainder, teststr, msg)
+            self.assertNotEqual(remainder, '', msg)
+            self.check_result(wteststr[:-len(remainder)], o, None, msg)
+      elif self.grammar.grammar_whitespace_mode == 'explicit':
+        for teststr in self.matches + self.matches_with_remainder:
+          for wstr in self.ws_strs:
+            p.reset()
+            wteststr = wstr + teststr
+            msg = '[testcase={!r}]'.format(wteststr)
+            try:
+              o = p.parse_string(wteststr)
+            except ParseError:
+              pass
+            else:
+              remainder = p.remainder()
+              self.assertEqual(remainder, wteststr, msg)
     except ParseError:
       self.fail("Got unexpected ParseError {}".format(msg))
 

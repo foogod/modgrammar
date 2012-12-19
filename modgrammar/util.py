@@ -49,7 +49,7 @@ def regularize(grammar):
   except TypeError:
     raise modgrammar.GrammarDefError("object of type '%s' cannot be converted to Grammar" % (type(grammar).__name__,))
 
-_anongrammar_attrs = ('grammar_collapse', 'grammar_desc', 'grammar_name', 'grammar_whitespace', 'grammar_whitespace_required', 'grammar_tags')
+_anongrammar_attrs = ('grammar_collapse', 'grammar_desc', 'grammar_name', 'grammar_whitespace', 'grammar_whitespace_mode', 'grammar_tags')
 
 def is_simple_anongrammar(cls):
   if not issubclass(cls, AnonGrammar):
@@ -77,7 +77,7 @@ classdict_map = dict(
     tags='grammar_tags',
     greedy='grammar_greedy',
     whitespace='grammar_whitespace',
-    whitespace_required='grammar_whitespace_required',
+    whitespace_mode='grammar_whitespace_mode',
 )
 
 def make_classdict(base, grammar, kwargs, **defaults):
@@ -91,10 +91,10 @@ def make_classdict(base, grammar, kwargs, **defaults):
     mdict = get_calling_module().__dict__
     whitespace = mdict.get("grammar_whitespace", modgrammar.grammar_whitespace)
     cdict["grammar_whitespace"] = whitespace
-  if not "grammar_whitespace_required" in cdict and base.grammar_whitespace_required is None:
+  if not "grammar_whitespace_mode" in cdict and base.grammar_whitespace_mode is None:
     mdict = get_calling_module().__dict__
-    whitespace_reqd = mdict.get("grammar_whitespace_required", modgrammar.grammar_whitespace_required)
-    cdict["grammar_whitespace_required"] = whitespace_reqd
+    whitespace_mode = mdict.get("grammar_whitespace_mode", modgrammar.grammar_whitespace_mode)
+    cdict["grammar_whitespace_mode"] = whitespace_mode
   return cdict
 
 def calc_line_col(string, count, line=0, col=0, tabs=1):
