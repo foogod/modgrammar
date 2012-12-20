@@ -470,7 +470,7 @@ class GrammarParser:
 
     Return values, exceptions, and optional parameters are all exactly the same as for :meth:`parse_string`.
 
-    Note: Be careful using ``matchtype="all"`` with parse_lines/parse_file.  You must manually call :func:`~GrammarParser.skip` after each yielded match, or you will end up with an infinite loop!
+    **Note:** Be careful using ``matchtype="all"`` with parse_lines/parse_file.  You must manually call :func:`~GrammarParser.skip` after each yielded match, or you will end up with an infinite loop!
     """
     if reset:
       self.reset()
@@ -490,7 +490,7 @@ class GrammarParser:
 
     Return values, exceptions, and optional parameters are all exactly the same as for :meth:`parse_string`.
 
-    Note: Be careful using ``matchtype="all"`` with parse_lines/parse_file.  You must manually call :func:`~GrammarParser.skip` after each yielded match, or you will end up with an infinite loop!
+    **Note:** Be careful using ``matchtype="all"`` with parse_lines/parse_file.  You must manually call :func:`~GrammarParser.skip` after each yielded match, or you will end up with an infinite loop!
     """
     if isinstance(file, str):
       with open(file, "r") as f:
@@ -748,7 +748,7 @@ class Grammar (metaclass=GrammarClass):
   @classmethod
   def __class_str__(cls):
     """
-    Returns the string to be used when :func:`str` is used on this grammar class (Note: This is for the class itself, not for instances of the class.  For those, the usual :meth:`__str__` is used).
+    Returns the string to be used when :func:`str` is used on this grammar class (**Note:** This is for the class itself, not for instances of the class.  For those, the usual :meth:`__str__` is used).
     """
 
     return cls.grammar_name
@@ -756,7 +756,7 @@ class Grammar (metaclass=GrammarClass):
   @classmethod
   def __class_repr__(cls):
     """
-    Returns the string to be used when :func:`repr` is used on this grammar class (Note: This is for the class itself, not for instances of the class.  For those, the usual :meth:`__repr__` is used).
+    Returns the string to be used when :func:`repr` is used on this grammar class (**Note:** This is for the class itself, not for instances of the class.  For those, the usual :meth:`__repr__` is used).
     """
 
     name = cls.grammar_name
@@ -911,7 +911,7 @@ class Grammar (metaclass=GrammarClass):
     """
     Return all elements anywhere in the parse tree with the given tag.
 
-    Note: This method is deprecated.  Its functionality is now part of :meth:`find_all` instead.
+    **Note:** This method is deprecated.  Its functionality is now part of :meth:`find_all` instead.
     """
     warnings.warn("find_tag_all is deprecated: Use find_all instead.", DeprecationWarning, stacklevel=2)
     func = lambda e, l: l in getattr(e, "grammar_tags", ())
@@ -921,7 +921,7 @@ class Grammar (metaclass=GrammarClass):
     """
     Return the first element anywhere in the parse tree with the given tag (or by descending through multiple tags, in the same way as :meth:`find_tag_all`).
 
-    Note: This method is deprecated.  Its functionality is now part of :meth:`find` instead.
+    **Note:** This method is deprecated.  Its functionality is now part of :meth:`find` instead.
     """
     warnings.warn("find_tag is deprecated: Use find instead.", DeprecationWarning, stacklevel=2)
     func = lambda e, l: l in getattr(e, "grammar_tags", ())
@@ -1137,7 +1137,7 @@ def OR(*grammars, **kwargs):
   """
   An either-or grammar that will successfully match if any of its subgrammars matches.  :func:`OR` grammars can also be created by combining other grammars in python expressions using the or operator (``|``).
 
-  Note: Each of the possible grammars are attempted in left-to-right order.  This means that if more than one of the listed grammars could potentially match, the leftmost one will always match first.
+  **Note:** Each of the possible grammars are attempted in left-to-right order.  This means that if more than one of the listed grammars could potentially match, the leftmost one will always match first.
   """
   collapsed = []
   for g in grammars:
@@ -1270,7 +1270,7 @@ def EXCEPT(grammar, exc_grammar, **kwargs):
   """
   Match *grammar*, but only if it does not also match *exception_grammar*.  (This is equivalent to the ``-`` (exception) operator in EBNF) :func:`EXCEPT` grammars can also be created by combining other grammars in python expressions using the except operator (``-``).
 
-  Note: In many cases there are more efficient ways to design a particular grammar than using this construct.  It is provided mostly for full EBNF compatibility.
+  **Note:** In many cases there are more efficient ways to design a particular grammar than using this construct.  It is provided mostly for full EBNF compatibility.
   """
   cdict = util.make_classdict(ExceptionGrammar, (grammar, exc_grammar), kwargs)
   return GrammarClass("<EXCEPT>", (ExceptionGrammar,), cdict)
@@ -1614,7 +1614,7 @@ def LIST_OF(*grammar, **kwargs):
   """
   Match a list consisting of repetitions of *grammar* separated by *sep*.  As with other repetition grammars, the *min* and *max* keywords can also be used to restrict the number of matches to a certain range.
 
-  Note: Although this is most commonly used with a literal separator (such as the default ``","``), actually any (arbitrarily-complex) subgrammar can be specified for *sep* if desired.
+  **Note:** Although this is most commonly used with a literal separator (such as the default ``","``), actually any (arbitrarily-complex) subgrammar can be specified for *sep* if desired.
   """
   cdict = util.make_classdict(ListRepetition, grammar, kwargs)
   return GrammarClass("<LIST>", (ListRepetition,), cdict)

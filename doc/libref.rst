@@ -36,19 +36,24 @@ Class Attributes
 
       If set, this grammar will report all match failures by its subgrammars as if it had failed itself.  This effectively "hides" the subgrammars in any :exc:`ParseError` (which will use this grammar's location and :attr:`grammar_desc` instead when constructing error messages, etc).
 
-   .. attribute:: Grammar.grammar_whitespace
+   .. attribute:: Grammar.grammar_whitespace_mode
 
-      If set to :const:`True` (the default), this grammar will automatically skip over any whitespace found between its sub-grammars (it will be "whitespace consuming").  If set to :const:`False`, whitespace between elements will not be treated specially.
+      Determines how whitespace is treated between sub-elements of this grammar.  It can be set to one of the following values:
+
+        *'optional'* (default)
+          The grammar will automatically skip over any whitespace found between its sub-grammars (it will be "whitespace consuming").
+        *'explicit'*
+          Whitespace between sub-grammars will not be treated differently than any other syntactic element.  Any whitespace which is allowed must be specified explicitly as part of the grammar definition (for example, using :const:`SPACE`), and any extra whitespace will be considered an error.
+        *'required'*
+          Like *'optional'*, the grammar will skip over whitespace, but it will also require that there must be some amount of whitespace between each of its sub-grammars (if two sub-grammars occur in the input without any whitespace between them, that will be considered an error).
+
+      **Note:** In general, you will want to set this universally for your whole grammar.  The best way to do this is to define a ``grammar_whitespace_mode`` module-level variable in the same module as your grammar classes are defined.  If this is present, it will be used as the default for all grammar classes in that module.
+
+   .. attribute:: Grammar.grammar_whitespace
 
       In the case where you want a grammar to be "whitespace consuming" but want something other than the normal definition of "whitespace", you can also set :attr:`~Grammar.grammar_whitespace` to a custom regular expression object to be used instead.  This regular expression should attempt to match as much whitespace as possible, starting at the specified position in the string (the actual match result is not used, except that its length is used to determine how far to skip ahead in the string).
 
-      Note: In general, you will want to set this universally for your whole grammar.  The best way to do this is to define a ``grammar_whitespace`` module-level variable in the same module as your grammar classes are defined.  If this is present, it will be used as the default for all grammar classes in that module.
-
-   .. attribute:: Grammar.grammar_whitespace_required
-
-      If set to :const:`True`, this grammar will require that there always be some amount of whitespace between its sub-grammars (note that this only applies if grammar_whitespace is also enabled).  If set to :const:`False` (the default), whitespace between elements will be optional.
-
-      The :attr:`~Grammar.grammar_whitespace_required` attribute can be set in the same ways as :attr:`~Grammar.grammar_whitespace`.  In particular, it is possible to set a default for all grammars by defining it at the module-level, just like :attr:`~Grammar.grammar_whitespace`.
+      Like :attr:`~Grammar.grammar_whitespace_mode`, ``grammar_whitespace`` can also be set as a module-level variable, in which case it will be used as the default for all grammar classes in that module.
 
    There are also a few less-commonly-used class attributes which may be useful when inspecting grammars, or may be overridden in special cases:
 
@@ -60,13 +65,13 @@ Class Attributes
 
       If set to :const:`True` (default), indicates that in cases where this grammar could match multiple instances of a sub-text (i.e. for grammars that match repetitions), it should attempt to match the longest possible string first.  By contrast, if set to :const:`False`, the grammar will attempt to match the shortest repetition first.
 
-      Note: This attribute does not have any affect on most custom grammars (because most custom grammars are not themselves repetition grammars (instances of :class:`Repetition`)).  If you are looking to change this behavior in your own grammar definitions, you likely want to use the *collapse* parameter of :func:`REPETITON` (and related functions) instead.  Changing this attribute is mainly useful if for some reason you want to make a custom subclass of :class:`Repetition`, or if you are making a custom grammar element (with a custom :meth:`grammar_parse` definition) for which this setting might be significant.
+      **Note:** This attribute does not have any affect on most custom grammars (because most custom grammars are not themselves repetition grammars (instances of :class:`Repetition`)).  If you are looking to change this behavior in your own grammar definitions, you likely want to use the *greedy* parameter of :func:`REPETITON` (and related functions) instead.  Changing this attribute is mainly useful if for some reason you want to make a custom subclass of :class:`Repetition`, or if you are making a custom grammar element (with a custom :meth:`grammar_parse` definition) for which this setting might be significant.
 
    .. attribute:: Grammar.grammar_collapse_skip
 
       Specifies that, if an enclosing grammar is set to collapse, and this grammar is in its sub-grammar list, instances of this sub-grammar should also be left out of the resulting parse tree.
 
-      Note: There is usually no reason to set this attribute.  (It is enabled by default for :func:`LITERAL` grammars, as it is often desirable to leave literal matches out when collapsing grammars since they usually provide no information which isn't already known to the grammar designer.)
+      **Note:** There is usually no reason to set this attribute.  (It is enabled by default for :func:`LITERAL` grammars, as it is often desirable to leave literal matches out when collapsing grammars since they usually provide no information which isn't already known to the grammar designer.)
 
 Overridable Class Methods
 -------------------------
@@ -146,16 +151,16 @@ The following basic grammar classes/factories are provided from which more compl
 
    .. table::
 
-      ===================== ======================================
+      ===================== ========================================
       Keyword               Class Attribute
-      ===================== ======================================
+      ===================== ========================================
       *collapse*            :attr:`~Grammar.grammar_collapse`
       *collapse_skip*       :attr:`~Grammar.grammar_collapse_skip`
       *greedy*              :attr:`~Grammar.grammar_greedy`
       *tags*                :attr:`~Grammar.grammar_tags`
+      *whitespace_mode*     :attr:`~Grammar.grammar_whitespace_mode`
       *whitespace*          :attr:`~Grammar.grammar_whitespace`
-      *whitespace_required* :attr:`~Grammar.grammar_whitespace_required`
-      ===================== ======================================
+      ===================== ========================================
 
 .. autofunction:: GRAMMAR
 .. function:: G(*subgrammars, **kwargs)
@@ -186,7 +191,7 @@ The following basic grammar classes/factories are provided from which more compl
 
    Match the empty string.
 
-   Note: In most cases, :const:`None` is also equivalent to :const:`EMPTY`
+   **Note:** In most cases, :const:`None` is also equivalent to :const:`EMPTY`
 
 .. data:: BOL
 
@@ -204,7 +209,7 @@ The following basic grammar classes/factories are provided from which more compl
 
    Match the end of the file.
 
-   Note: This grammar will only match if the parse function is called with ``eof=True`` to indicate the end-of-file has been encountered.
+   **Note:** This grammar will only match if the parse function is called with ``eof=True`` to indicate the end-of-file has been encountered.
 
 .. data:: REST_OF_LINE
 
@@ -214,7 +219,7 @@ The following basic grammar classes/factories are provided from which more compl
 
    Match any string of whitespace.
 
-   Note: This may not match as you expect if your grammar is whitespace-consuming (see the :attr:`~Grammar.grammar_whitespace` attribute).
+   **Note:** This may not match as you expect if your grammar is whitespace-consuming (see the :attr:`~Grammar.grammar_whitespace_mode` attribute).
 
 The :mod:`modgrammar.extras` module also contains some additional built-in grammars which can be useful in some contexts.
 
