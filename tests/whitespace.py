@@ -292,7 +292,26 @@ modwsre_grammars = (
   ("LIST_OF(L('A'), sep=L('A'), whitespace=True)", LIST_OF(L('A'), sep=L('A'), whitespace=True), True),
 )
 
-class WhitespaceSettingTests (util.TestCase):
+class WhitespaceModeTestCase (util.TestCase):
+  def __init__(self, module_setting, name, grammar, expected, modset_str=None):
+    util.TestCase.__init__(self, 'perform_test')
+    if module_setting is None:
+      self.module_setting = True
+      self.module_setting_str = '(unset)'
+    else:
+      self.module_setting = module_setting
+      self.module_setting_str = repr(module_setting)
+    if modset_str is not None:
+      self.module_setting_str = modset_str
+    self.name = name
+    self.grammar = grammar
+    self.expected = expected
+
+  def __str__(self):
+    return "grammar_whitespace={}: {}".format(self.module_setting_str, self.name)
+
+  def perform_test(self):
+    self.check_recursive("{} (module grammar_whitespace={})".format(self.name, self.module_setting_str), self.grammar, self.expected, self.module_setting)
 
   def check_recursive(self, name, g, expected, expected_sub):
     if g.grammar_whitespace_mode != 'explicit':
@@ -311,22 +330,16 @@ class WhitespaceSettingTests (util.TestCase):
     for sub_g in sub_list:
       self.check_recursive(name, sub_g, expected_sub, expected_sub)
 
-  def test_ws_default(self):
-    for name, g, expected in default_grammars:
-      self.check_recursive(name + " (module grammar_whitespace unset)", g, expected, True)
-
-  def test_ws_modfalse(self):
-    for name, g, expected in modfalse_grammars:
-      self.check_recursive(name + " (module grammar_whitespace=False)", g, expected, False)
-
-  def test_ws_modtrue(self):
-    for name, g, expected in modtrue_grammars:
-      self.check_recursive(name + " (module grammar_whitespace=True)", g, expected, True)
-
-  def test_ws_modwsre(self):
-    for name, g, expected in modwsre_grammars:
-      self.check_recursive(name + " (module grammar_whitespace=WSRE)", g, expected, WSRE)
-
+def load_tests(loader, tests, pattern):
+  for name, g, expected in default_grammars:
+    tests.addTest(WhitespaceModeTestCase(None, name, g, expected))
+  for name, g, expected in modfalse_grammars:
+    tests.addTest(WhitespaceModeTestCase(False, name, g, expected))
+  for name, g, expected in modtrue_grammars:
+    tests.addTest(WhitespaceModeTestCase(True, name, g, expected))
+  for name, g, expected in modwsre_grammars:
+    tests.addTest(WhitespaceModeTestCase(WSRE, name, g, expected, 'WSRE'))
+  return tests
 
 ###############################################################################
 # The following tests the use of a custom regular expression for

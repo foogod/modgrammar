@@ -125,7 +125,7 @@ class G_Exp_Opt (Grammar):
   grammar = (ONE_OR_MORE('A'), 'B')
   grammar_whitespace_mode = 'optional'
 
-modopt_grammars = (
+modexp_grammars = (
   ("G_Exp", G_Exp, 'explicit'),
   ("G_Exp_Exp", G_Exp_Exp, 'explicit'),
   ("G_Exp_Req", G_Exp_Req, 'required'),
@@ -399,7 +399,26 @@ modreq_grammars = (
   ("G('A')", G('A'), 'explicit'),
 )
 
-class WhitespaceModeTests (util.TestCase):
+class WhitespaceModeTestCase (util.TestCase):
+  def __init__(self, module_setting, name, grammar, expected, modset_str=None):
+    util.TestCase.__init__(self, 'perform_test')
+    if module_setting is None:
+      self.module_setting = 'optional'
+      self.module_setting_str = '(unset)'
+    else:
+      self.module_setting = module_setting
+      self.module_setting_str = repr(module_setting)
+    if modset_str is not None:
+      self.module_setting_str = modset_str
+    self.name = name
+    self.grammar = grammar
+    self.expected = expected
+
+  def __str__(self):
+    return "grammar_whitespace_mode={}: {}".format(self.module_setting_str, self.name)
+
+  def perform_test(self):
+    self.check_recursive("{} (module grammar_whitespace_mode={})".format(self.name, self.module_setting_str), self.grammar, self.expected, self.module_setting)
 
   def check_recursive(self, name, g, expected, expected_sub):
     if g.grammar_whitespace_mode != expected:
@@ -422,16 +441,14 @@ class WhitespaceModeTests (util.TestCase):
       else:
         self.check_recursive(name, sub_g, expected_sub, expected_sub)
 
-  def test_ws_default(self):
-    for name, g, expected in default_grammars:
-      self.check_recursive(name + " (module grammar_whitespace_mode unset)", g, expected, 'optional')
-
-  def test_ws_modopt(self):
-    for name, g, expected in modopt_grammars:
-      self.check_recursive(name + " (module grammar_whitespace_mode='optional')", g, expected, 'optional')
-
-  def test_ws_modreq(self):
-    for name, g, expected in modreq_grammars:
-      self.check_recursive(name + " (module grammar_whitespace_mode='required')", g, expected, 'required')
-
+def load_tests(loader, tests, pattern):
+  for name, g, expected in default_grammars:
+    tests.addTest(WhitespaceModeTestCase(None, name, g, expected))
+  for name, g, expected in modexp_grammars:
+    tests.addTest(WhitespaceModeTestCase('explicit', name, g, expected))
+  for name, g, expected in modopt_grammars:
+    tests.addTest(WhitespaceModeTestCase('optional', name, g, expected))
+  for name, g, expected in modreq_grammars:
+    tests.addTest(WhitespaceModeTestCase('required', name, g, expected))
+  return tests
 
