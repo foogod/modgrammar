@@ -20,7 +20,7 @@ WSRE = re.compile('-*')
 # This is ok, because these are all 'explicit' mode anyway (verified in
 # whitespace_mode.py tests), so we don't care what their grammar_whitespace is
 # set to:
-#   SPACE
+#   WHITESPACE
 #   ANY
 #   EOL
 #   EOF

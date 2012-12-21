@@ -46,12 +46,12 @@ class RG8 (Grammar):
 
 class GeneralRefTests (util.TestCase):
   def test_basic_ref(self):
-    o = G0.parser().parse_string('a')
+    o = G0.parser().parse_text('a')
     self.assertIsInstance(o, G0)
     self.assertIsInstance(o.elements[0], G1)
 
   def test_override(self):
-    o = G0.parser({'G1': G2}).parse_string('b')
+    o = G0.parser({'G1': G2}).parse_text('b')
     self.assertIsInstance(o, G0)
     self.assertIsInstance(o.elements[0], G2)
 
@@ -61,35 +61,35 @@ class GeneralRefTests (util.TestCase):
         return G2
 
     data = SessionData()
-    o = G0.parser(data).parse_string('b')
+    o = G0.parser(data).parse_text('b')
     self.assertIsInstance(o, G0)
     self.assertIsInstance(o.elements[0], G2)
 
   def test_null_override(self):
-    o = G0.parser({'G1': None}).parse_string('a')
+    o = G0.parser({'G1': None}).parse_text('a')
     self.assertIsInstance(o, G0)
     self.assertIsInstance(o.elements[0], G1)
   
   def test_default(self):
-    o = G4.parser().parse_string('a')
+    o = G4.parser().parse_text('a')
     self.assertIsInstance(o, G4)
     self.assertIsInstance(o.elements[0], G1)
-    o = G4.parser({'subgrammar': G2}).parse_string('b')
+    o = G4.parser({'subgrammar': G2}).parse_text('b')
     self.assertIsInstance(o, G4)
     self.assertIsInstance(o.elements[0], G2)
   
   def test_null_override_with_default(self):
-    o = G4.parser({'subgrammar': None}).parse_string('a')
+    o = G4.parser({'subgrammar': None}).parse_text('a')
     self.assertIsInstance(o, G4)
     self.assertIsInstance(o.elements[0], G1)
   
   def test_unknown_ref(self):
     with self.assertRaises(UnknownReferenceError):
-      o = G3.parser().parse_string('a')
+      o = G3.parser().parse_text('a')
 
   def test_invalid_override(self):
     with self.assertRaises(BadReferenceError):
-      o = G0.parser({'G1': self}).parse_string('a')
+      o = G0.parser({'G1': self}).parse_text('a')
 
   def test_resolve_unknown(self):
     with self.assertRaises(UnknownReferenceError):

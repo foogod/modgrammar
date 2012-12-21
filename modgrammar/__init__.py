@@ -24,7 +24,7 @@ __all__ = [
     "Literal", "Word", "Repetition", "ListRepetition", "Reference",
     "GRAMMAR", "G", "ANY", "EMPTY", "REF", "LITERAL", "L", "OR", "EXCEPT", "WORD", "REPEAT", "LIST_OF", "OPTIONAL", "NOT_FOLLOWED_BY",
     "ZERO_OR_MORE", "ONE_OR_MORE", "ANY_EXCEPT", "BOL", "EOL", "EOF",
-    "REST_OF_LINE", "SPACE",
+    "REST_OF_LINE", "WHITESPACE", "SPACE",
     "generate_ebnf",
 ]
 
@@ -405,7 +405,7 @@ class GrammarParser:
       result = result[0]
     return (count, result)
 
-  def _parse_string(self, string, bol, eof, data, matchtype):
+  def _parse_text(self, string, bol, eof, data, matchtype):
     self.append(string, bol=bol, eof=eof)
     pos = 0
     if data is None:
@@ -430,7 +430,7 @@ class GrammarParser:
 	# case or the count-is-zero case next time through.
         break
 
-  def parse_string(self, string, bol=None, eof=None, reset=False, multi=False, data=None, matchtype='first'):
+  def parse_text(self, string, bol=None, eof=None, reset=False, multi=False, data=None, matchtype='first'):
     """
     Attempt to match *string* against the associated grammar.  If successful, returns a corresponding match object.  If there is an incomplete match (or it is impossible to determine yet whether the match is complete or not), save the current text in the match buffer and return :const:`None` to indicate more text is required.  If the text does not match any valid grammar construction, raise :exc:`ParseError`.
 
@@ -461,31 +461,35 @@ class GrammarParser:
     if reset:
       self.reset()
     if multi:
-      return list(self._parse_string(string, bol, eof, data, matchtype))
+      return list(self._parse_text(string, bol, eof, data, matchtype))
     else:
-      for result in self._parse_string(string, bol, eof, data, matchtype):
+      for result in self._parse_text(string, bol, eof, data, matchtype):
         # This will always just return the first result
         return result
       return None
+
+  def parse_string(self, *args, **kwargs):
+    warnings.warn("parse_string syntax will be changing: For future compatibility, use parse_text instead.", DeprecationWarning, stacklevel=2)
+    return self.parse_text(*args, **kwargs)
 
   def parse_lines(self, lines, bol=False, eof=False, reset=False, data=None, matchtype='first'):
     """
     *(generator method)*
 
-    Attempt to match a list (or actually any iterable) of strings against the associated grammar.  This is effectively the same as calling :meth:`parse_string` repeatedly for each string in the list to obtain all matches in sequence.
+    Attempt to match a list (or actually any iterable) of strings against the associated grammar.  This is effectively the same as calling :meth:`parse_text` repeatedly for each string in the list to obtain all matches in sequence.
 
-    Return values, exceptions, and optional parameters are all exactly the same as for :meth:`parse_string`.
+    Return values, exceptions, and optional parameters are all exactly the same as for :meth:`parse_text`.
 
     **Note:** Be careful using ``matchtype="all"`` with parse_lines/parse_file.  You must manually call :func:`~GrammarParser.skip` after each yielded match, or you will end up with an infinite loop!
     """
     if reset:
       self.reset()
     for line in lines:
-      for result in self._parse_string(line, bol, False, data, matchtype):
+      for result in self._parse_text(line, bol, False, data, matchtype):
         yield result
       bol = None
     if eof:
-      for result in self._parse_string("", None, True, data, matchtype):
+      for result in self._parse_text("", None, True, data, matchtype):
         yield result
 
   def parse_file(self, file, bol=False, eof=True, reset=False, data=None, matchtype='first'):
@@ -494,7 +498,7 @@ class GrammarParser:
 
     Open and process the contents of a file using the associated grammar.  This is basically the same as opening the specified file, and passing the resulting file object to :meth:`parse_lines`.
 
-    Return values, exceptions, and optional parameters are all exactly the same as for :meth:`parse_string`.
+    Return values, exceptions, and optional parameters are all exactly the same as for :meth:`parse_text`.
 
     **Note:** Be careful using ``matchtype="all"`` with parse_lines/parse_file.  You must manually call :func:`~GrammarParser.skip` after each yielded match, or you will end up with an infinite loop!
     """
@@ -625,9 +629,9 @@ class Grammar (metaclass=GrammarClass):
           if whitespace_reqd and objs and pos == prews_pos:
 	    # We didn't match any whitespace before the next sub-grammar, but
 	    # whitespace is required between sub-grammars.  Handle this as if
-	    # there were a SPACE grammar in this spot that gave us back an
+	    # there were a WHITESPACE grammar in this spot that gave us back an
 	    # error result.
-            obj = util.error_result(pos, SPACE)[1]
+            obj = util.error_result(pos, WHITESPACE)[1]
             best_error = util.update_best_error(best_error, obj)
             break
         if first_pos is None:
@@ -1745,6 +1749,19 @@ class EOL (Terminal):
   grammar_collapse_skip = True
   grammar = (L("\n\r") | L("\r\n") | L("\r") | L("\n"))
 
+class WHITESPACE (Word):
+  grammar_desc = "whitespace"
+  regexp = re.compile("[\s]+")
+
+  @classmethod
+  def __class_init__(cls, attrs):
+    # Don't do the normal Word __class_init__ stuff.
+    pass
+
+  @classmethod
+  def grammar_details(cls, depth=-1, visited=None):
+    return cls.grammar_name
+
 class SPACE (Word):
   grammar_desc = "whitespace"
   regexp = re.compile("[\s]+")
@@ -1753,6 +1770,22 @@ class SPACE (Word):
   def __class_init__(cls, attrs):
     # Don't do the normal Word __class_init__ stuff.
     pass
+
+  @classmethod
+  def grammar_parse(cls, text, index, sessiondata):
+    warnings.warn("The meaning of SPACE will be changing: For future compatibility, use WHITESPACE instead.", DeprecationWarning)
+    s = Word.grammar_parse.__func__(cls, text, index, sessiondata)
+    offset, obj = next(s)
+    try:
+      while True:
+        if offset is None:
+          text = yield (offset, obj)
+          offset, obj = s.send(text)
+        else:
+          yield (offset, obj)
+          offset, obj = next(s)
+    except StopIteration:
+      pass
 
   @classmethod
   def grammar_details(cls, depth=-1, visited=None):

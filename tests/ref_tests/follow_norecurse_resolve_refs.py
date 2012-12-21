@@ -40,6 +40,6 @@ class ResolveRefTests (util.TestCase):
     self.assertIsSubclass(G6.grammar[0], Reference)
 
   def test_parse(self):
-    o = G0.parser().parse_string('aaaaa')
+    o = G0.parser().parse_text('aaaaa')
     self.assertIsNotNone(o)
 

@@ -73,7 +73,7 @@ class Expr (Grammar):
 
 if __name__ == '__main__':
     parser = Expr.parser() 
-    result = parser.parse_string(sys.argv[1], eof=True) 
+    result = parser.parse_text(sys.argv[1], eof=True) 
     remainder = parser.remainder() 
     print("Parsed Text: {}".format(result)) 
     print("Unparsed Text: {}".format(remainder)) 

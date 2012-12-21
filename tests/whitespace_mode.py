@@ -99,7 +99,7 @@ default_grammars = (
   ("EOF", EOF, 'explicit'),
   ("EMPTY", EMPTY, 'explicit'),
   ("REST_OF_LINE", REST_OF_LINE, 'explicit'),
-  ("SPACE", SPACE, 'explicit'),
+  ("WHITESPACE", WHITESPACE, 'explicit'),
   ("NOT_FOLLOWED_BY('A')", NOT_FOLLOWED_BY('A'), 'explicit'),
 
   # GRAMMAR with a single element just returns that element, so the following
@@ -196,7 +196,7 @@ modexp_grammars = (
   ("EOF", EOF, 'explicit'),
   ("EMPTY", EMPTY, 'explicit'),
   ("REST_OF_LINE", REST_OF_LINE, 'explicit'),
-  ("SPACE", SPACE, 'explicit'),
+  ("WHITESPACE", WHITESPACE, 'explicit'),
   ("NOT_FOLLOWED_BY('A')", NOT_FOLLOWED_BY('A'), 'explicit'),
 
   # GRAMMAR with a single element just returns that element, so the following
@@ -293,7 +293,7 @@ modopt_grammars = (
   ("EOF", EOF, 'explicit'),
   ("EMPTY", EMPTY, 'explicit'),
   ("REST_OF_LINE", REST_OF_LINE, 'explicit'),
-  ("SPACE", SPACE, 'explicit'),
+  ("WHITESPACE", WHITESPACE, 'explicit'),
   ("NOT_FOLLOWED_BY('A')", NOT_FOLLOWED_BY('A'), 'explicit'),
 
   # GRAMMAR with a single element just returns that element, so the following
@@ -390,7 +390,7 @@ modreq_grammars = (
   ("EOF", EOF, 'explicit'),
   ("EMPTY", EMPTY, 'explicit'),
   ("REST_OF_LINE", REST_OF_LINE, 'explicit'),
-  ("SPACE", SPACE, 'explicit'),
+  ("WHITESPACE", WHITESPACE, 'explicit'),
   ("NOT_FOLLOWED_BY('A')", NOT_FOLLOWED_BY('A'), 'explicit'),
 
   # GRAMMAR with a single element just returns that element, so the following

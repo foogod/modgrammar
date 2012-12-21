@@ -26,9 +26,9 @@ So we have a grammar defined, and that's all well and good, but how do we actual
 
    myparser = MyGrammar.parser()
 
-This parser object can then be used to take pieces of text and attempt to match them against the associated grammar.  Parser objects have several different methods for doing this, depending on whether you're reading from a file, parsing all your text at once, getting it a bit at a time, etc, but for now we'll stick to trying to parse a single string.  To do this, just call the :meth:`~modgrammar.GrammarParser.parse_string` method::
+This parser object can then be used to take pieces of text and attempt to match them against the associated grammar.  Parser objects have several different methods for doing this, depending on whether you're reading from a file, parsing all your text at once, getting it a bit at a time, etc, but for now we'll stick to trying to parse a single string.  To do this, just call the :meth:`~modgrammar.GrammarParser.parse_text` method::
 
-   result = myparser.parse_string("Hello, world!")
+   result = myparser.parse_text("Hello, world!")
 
 Congratulations!  If you're following along in your own window, you have just successfully parsed a piece of text using a custom grammar and now have a parse result object containing all of the relevant information.  Let's take a look::
 
@@ -95,11 +95,11 @@ As you probably figured out already, this will allow us to match both "Goodbye, 
 ::
 
    >>> myparser = MyGrammar.parser()
-   >>> result = myparser.parse_string("Hello, world!")
+   >>> result = myparser.parse_text("Hello, world!")
    >>> result.elements
    (L('Hello,')<'Hello,'>, L(',')<','>, None, L('world!')<'world!'>)
 
-   >>> result = myparser.parse_string("Goodbye, cruel world!")
+   >>> result = myparser.parse_text("Goodbye, cruel world!")
    >>> result.elements
    (L('Goodbye')<'Goodbye'>, L(',')<','>, L('cruel')<'cruel'>, L('world!')<'world!'>)
 
@@ -133,7 +133,7 @@ There we go.. we now have not just one grammar, but a whole grammar tree (well, 
 So, let's see how it works::
 
    >>> myparser = MyGrammar.parser()
-   >>> result = myparser.parse_string("Hello, world!")
+   >>> result = myparser.parse_text("Hello, world!")
    >>> result.elements
    (OpeningWord<'Hello'>, L(',')<','>, WorldPhrase<None, 'world'>, L('!')<'!'>)
 
@@ -163,10 +163,10 @@ And we'll update our :class:`MyGrammar` to add the new option::
 There!  Now let's give it a whirl::
 
    >>> myparser = MyGrammar.parser()
-   >>> myparser.parse_string("Hello, wonderful world!")
+   >>> myparser.parse_text("Hello, wonderful world!")
    MyGrammar<'Hello', ',', 'wonderful world', '!'>
 
-   >>> myparser.parse_string("Hello, my name is Inigo Montoya!")
+   >>> myparser.parse_text("Hello, my name is Inigo Montoya!")
    MyGrammar<'Hello', ',', 'my name is Inigo Montoya', '!'>
 
 Remember that bit above about identifying results based on their class?  Here's an example of where it comes in handy.  Both of these are valid matches to the grammar, but they're two very different sorts of sentences.  How do we tell what type of sentence we're dealing with?  Well, just look at the type of the third element::
@@ -186,7 +186,7 @@ So what if we wanted to be able to include multiple phrases in the same sentence
 There, now we can have any number of :class:`WorldPhrase` or :class:`MyNameIs` matches before the final exclamation point::
 
    >>> myparser = MyGrammar.parser()
-   >>> results = myparser.parse_string("Hello, cruel world my name is Inigo Montoya!")
+   >>> results = myparser.parse_text("Hello, cruel world my name is Inigo Montoya!")
    >>> results.elements
    (OpeningWord<'Hello'>, L(',')<','>, <REPEAT><'cruel world', 'my name is Inigo Montoya'>, L('!')<'!'>)
    >>> results[2].elements
@@ -200,7 +200,7 @@ As you can see, the third element is now a :func:`~modgrammar.REPEAT` match, whi
 Because it's so common, the :func:`~modgrammar.LIST_OF` construct was created specifically to deal with this sort of case.  It's basically like :func:`~modgrammar.REPEAT`, except that you can specify a separator that should come between each repeated occurrence (but not at the beginning or end), so now we can have multiple sentiments in our sentence, but they have to be separated by commas::
 
    >>> myparser = MyGrammar.parser()
-   >>> result = myparser.parse_string("Hello, cruel world, my name is Inigo Montoya!")
+   >>> result = myparser.parse_text("Hello, cruel world, my name is Inigo Montoya!")
    >>> result[2].elements
    (WorldPhrase<'wonderful', 'world'>, L(',')<','>, MyNameIs<'my name is', 'Inigo', 'Montoya'>)
 
@@ -213,11 +213,11 @@ One last thing:  Currently our grammar will match a potentially infinite number 
 
 Now it won't let us go too far overboard with our sentences::
 
-   >>> myparser.parse_string("Hello, cruel world!")
+   >>> myparser.parse_text("Hello, cruel world!")
    MyGrammar<'Hello', ',', 'cruel world', '!'>
-   >>> myparser.parse_string("Hello, cruel world, wonderful world!")
+   >>> myparser.parse_text("Hello, cruel world, wonderful world!")
    MyGrammar<'Hello', ',', 'cruel world, wonderful world', '!'>
-   >>> myparser.parse_string("Hello, cruel world, wonderful world, cruel world!")
+   >>> myparser.parse_text("Hello, cruel world, wonderful world, cruel world!")
    Traceback (most recent call last):
    ...
    modgrammar.ParseError: [line 1, column 91] Expected '!': found ', cruel world!'
@@ -272,7 +272,7 @@ And, in fact, this is what the :meth:`~modgrammar.Grammar.grammar_resolve_refs` 
 
 And presto, a fully recursive grammar::
 
-   >>> Expression.parser().parse_string("(1*2)+(3*(4/(5-6)))")
+   >>> Expression.parser().parse_text("(1*2)+(3*(4/(5-6)))")
    Expression<'(1*2)', '+', '(3*(4/(5-6)))'>
 
 Note that while this grammar can theoretically support an unlimited depth of recursion, from a practical perspective each time the :mod:`modgrammar` engine descends into a sub-grammar it involves an associated method call, so the actual depth is limited by the python interpreter's stack.  (For most python implementations, however, the stack is large enough that this is usually not a large concern.)
@@ -289,7 +289,7 @@ We should also talk for a moment about what is known as "left recursion".  This 
 
 This (recursive) grammar will match any number of literal "A"s, with the first element being an "A", and the second being a recursive :class:`RightRecursive` match, like so::
 
-   >>> result = RightRecursive.parser().parse_string("AAAB")
+   >>> result = RightRecursive.parser().parse_text("AAAB")
    >>> result
    RightRecursive<'A', 'AA'>
    >>> result.elements[1]
@@ -306,7 +306,7 @@ Now let's look at the same thing, but done in a left-recursive way::
 
 Now, theoretically, according to the rules of defining grammars, this is a perfectly valid grammar definition: it should match the same thing as :class:`RightRecursive`, but just with the recursive part being the first element of each match and the literal being the second.  The problem, however, is that since the :mod:`modgrammar` parser works in a left-to-right order, the first thing it will try to match is the first sub-grammar, which is a reference to :class:`LeftRecursive`, so it will try to match the first sub-grammar of that, which is a reference to :class:`LeftRecursive`, and so on, and so on.  The end result is that it will recurse infinitely (or really, until it runs out of stack space) before it ever starts actually matching anything at all::
 
-   >>> result = LeftRecursive.parser().parse_string("AAAB")
+   >>> result = LeftRecursive.parser().parse_text("AAAB")
    Traceback (most recent call last):
    ...
    RuntimeError: maximum recursion depth exceeded in __instancecheck__
@@ -345,11 +345,11 @@ By default, all the grammars you define will be "greedy".  That means that whene
 
 This grammar will match an "A", followed by a number of "A"s, "B"s, or "C"s, finally terminated by a "C".  If we try matching a few texts::
 
-   >>> GreedyGrammar.parser().parse_string("ABCD")
+   >>> GreedyGrammar.parser().parse_text("ABCD")
    GreedyGrammar<'A', 'B', 'C'>
-   >>> GreedyGrammar.parser().parse_string("ABCBCD")
+   >>> GreedyGrammar.parser().parse_text("ABCBCD")
    GreedyGrammar<'A', 'BCB', 'C'>
-   >>> GreedyGrammar.parser().parse_string("ABCCCCCCD")
+   >>> GreedyGrammar.parser().parse_text("ABCCCCCCD")
    GreedyGrammar<'A', 'BCCCCC', 'C'>
 
 As you can see, in each case the match it found was the longest one possible.  However, if we want to change this behavior, we can configure this using the *greedy* parameter to :func:`~modgrammar.REPEAT`::
@@ -357,11 +357,11 @@ As you can see, in each case the match it found was the longest one possible.  H
    class NonGreedyGrammar (Grammar):
        grammar = ("A", REPEAT(L("A") | L("B") | L("C"), greedy=False), "C")
 
-   >>> NonGreedyGrammar.parser().parse_string("ABCD")
+   >>> NonGreedyGrammar.parser().parse_text("ABCD")
    NonGreedyGrammar<'A', 'B', 'C'>
-   >>> NonGreedyGrammar.parser().parse_string("ABCBCD")
+   >>> NonGreedyGrammar.parser().parse_text("ABCBCD")
    NonGreedyGrammar<'A', 'B', 'C'>
-   >>> NonGreedyGrammar.parser().parse_string("ABCCCCCCD")
+   >>> NonGreedyGrammar.parser().parse_text("ABCCCCCCD")
    NonGreedyGrammar<'A', 'B', 'C'>
 
 Now the grammar matches the smallest possible match instead.
@@ -371,11 +371,11 @@ Note, however, that any match returned must always match the entire grammar, so 
    class NonGreedyGrammar (Grammar):
        grammar = ("A", REPEAT(L("A") | L("B") | L("C"), greedy=False), "C", "D")
 
-   >>> NonGreedyGrammar.parser().parse_string("ABCD")
+   >>> NonGreedyGrammar.parser().parse_text("ABCD")
    NonGreedyGrammar<'A', 'B', 'C', 'D'>
-   >>> NonGreedyGrammar.parser().parse_string("ABCBCD")
+   >>> NonGreedyGrammar.parser().parse_text("ABCBCD")
    NonGreedyGrammar<'A', 'BCB', 'C', 'D'>
-   >>> NonGreedyGrammar.parser().parse_string("ABCCCCCCD")
+   >>> NonGreedyGrammar.parser().parse_text("ABCCCCCCD")
    NonGreedyGrammar<'A', 'BCCCCC', 'C', 'D'>
 
 Using the Results
@@ -387,7 +387,7 @@ As we showed earlier, when you parse some text using a parser, you will (hopeful
 
 In many applications, for example, you may not actually care about the whole parse tree, but only one particular bit of it.  Let's go back to our modified "hello world" example::
 
-   >>> result = myparser.parse_string("Hello, cruel world, my name is Inigo Montoya!")
+   >>> result = myparser.parse_text("Hello, cruel world, my name is Inigo Montoya!")
    >>> result[2].elements
    (WorldPhrase<'cruel', 'world'>, L(',')<','>, MyNameIs<'my name is', 'Inigo', 'Montoya'>)
 
@@ -398,7 +398,7 @@ Now let's say in this case all we really care about is finding out the person's 
 
 Tada!  But what if there's more than one, and we want to see all of them?  Well, there's also a :meth:`~modgrammar.Grammar.find_all` method::
 
-   >>> result = myparser.parse_string("Hello, my name is Inigo Montoya, my name is Fezzik!")
+   >>> result = myparser.parse_text("Hello, my name is Inigo Montoya, my name is Fezzik!")
    >>> result.find_all(FirstName)
    [FirstName<'Inigo'>, FirstName<'Fezzik'>]
 
@@ -431,7 +431,7 @@ When defining any grammar class, you can associate with it one or more "tags".  
 Now if we generate a new result from this grammar, we can actually search for elements with a "name" tag using :meth:`~modgrammar.Grammar.find_tag` and :meth:`~modgrammar.Grammar.find_tag_all`, just the same as we used :meth:`~modgrammar.Grammar.find` and :meth:`~modgrammar.Grammar.find_all` before::
 
    >>> myparser = MyGrammar.parser()
-   >>> result = myparser.parse_string("Hello, my name is Inigo Montoya, my name is Fezzik!")
+   >>> result = myparser.parse_text("Hello, my name is Inigo Montoya, my name is Fezzik!")
    >>> result.find_tag("name")
    FirstName<'Inigo'>
    >>> result.find_tag_all("name")
@@ -467,7 +467,7 @@ Now, there are two kinds of methods you can define for this purpose: methods whi
 Now if we take a look at the MyNameIs element produced from a parse result, it has some new (useful) attributes already set up for us::
 
    >>> myparser = MyGrammar.parser()
-   >>> result = myparser.parse_string("Hello, my name is Inigo Montoya!")
+   >>> result = myparser.parse_text("Hello, my name is Inigo Montoya!")
    >>> mynameis = result.find(MyNameIs)
    >>> mynameis.firstname
    'Inigo'
@@ -485,12 +485,12 @@ You might also have noticed the *sessiondata* parameter passed to :meth:`~modgra
 Now, depending on how we create the parser, we can get different results::
 
    >>> myparser = MyGrammar.parser({"name_prefix": "Mr."})
-   >>> result = myparser.parse_string("Hello, my name is Inigo Montoya!")
+   >>> result = myparser.parse_text("Hello, my name is Inigo Montoya!")
    >>> result.find(MyNameIs).fullname
    'Mr. Inigo Montoya'
 
    >>> myparser = MyGrammar.parser({"name_prefix": "The swordfighter"})
-   >>> result = myparser.parse_string("Hello, my name is Inigo Montoya!")
+   >>> result = myparser.parse_text("Hello, my name is Inigo Montoya!")
    >>> result.find(MyNameIs).fullname
    'The swordfighter Inigo Montoya'
 
@@ -517,7 +517,7 @@ Another nifty trick that can be performed with :meth:`~modgrammar.Grammar.elem_i
 Now any MyNameIs result object which is created will have the "has_lastname" tag if, and only if, it actually has a last name::
 
    >>> myparser = MyGrammar.parser()
-   >>> result = myparser.parse_string("Hello, my name is Inigo Montoya, my name is Fezzik!")
+   >>> result = myparser.parse_text("Hello, my name is Inigo Montoya, my name is Fezzik!")
    >>> result.find_all(MyNameIs)
    [MyNameIs<'my name is', 'Inigo', 'Montoya'>, MyNameIs<'my name is', 'Fezzik', None>]
    >>> result.find_tag_all("has_lastname")
@@ -539,7 +539,7 @@ Now all we have to do is take the result object we get, and call that method, an
 
    >>> names = []
    >>> myparser = MyGrammar.parser()
-   >>> result = myparser.parse_string("Hello, my name is Inigo Montoya, my name is Fezzik!")
+   >>> result = myparser.parse_text("Hello, my name is Inigo Montoya, my name is Fezzik!")
    >>> result.add_names_to_list(names)
    >>> names
    ['Inigo Montoya', 'Fezzik ']
@@ -554,7 +554,7 @@ As Simple As Possible (But No Simpler)
 
 Once you've started creating fairly complex grammars, you may come to notice that they tend to accumulate a lot of extra levels that you don't necessarily care about.  For example, in our perennial heavily-modified "hello world" example, every result object we get back is going to have an :class:`OpeningWord` as its first element, which then inside it will have the actual word used, so to get the word we need to do an extra level of indirection (``result[0][0]``)::
 
-   >>> result = myparser.parse_string("Hello, world!")
+   >>> result = myparser.parse_text("Hello, world!")
    >>> result[0]
    OpeningWord<'Hello'>
    >>> result[0][0]
@@ -570,7 +570,7 @@ We can actually do this, using "grammar collapsing".  Any individual grammar def
 
 Now, if we take a look at a result object, we'll see that the first element, instead of being an :class:`OpeningWord` object, is now the literal object itself::
 
-   >>> result = myparser.parse_string("Hello, world!")
+   >>> result = myparser.parse_text("Hello, world!")
    >>> result[0]
    L('Hello')<'Hello'>
 
@@ -592,17 +592,17 @@ In all the examples so far, we've been using our parser to parse single, individ
 
 Luckily, parser objects are designed to take some of the complexity out of this for us.  In addition to nice, neatly split up texts like we've been using, you can actually feed any amount of text, in any number of pieces, into a parser object and it will still do its thing quite happily.  Take the following example::
 
-   >>> myparser.parse_string("Hello, my na")
-   >>> myparser.parse_string("me is Inigo Montoya! Hello, my name is Fezzik!")
+   >>> myparser.parse_text("Hello, my na")
+   >>> myparser.parse_text("me is Inigo Montoya! Hello, my name is Fezzik!")
    MyGrammar<'Hello', ',', 'my name is Inigo Montoya', '!'>
-   >>> myparser.parse_string("")
+   >>> myparser.parse_text("")
    MyGrammar<'Hello', ',', 'my name is Fezzik', '!'>
 
-In this, you can see a few things.  First, when we first called :meth:`~modgrammar.GrammarParser.parse_string`, we had a good start (the text matched the beginning of our grammar), but it wasn't complete yet, so the parser just took that info and stored it away for later (returning :const:`None` to indicate it needed more text).  The next time, we actually gave it too much text, but that's ok, it finished matching the first instance of the grammar in the text and gave us back the result.  The extra didn't get lost, though, it's still stored in there ready for parsing the next time.  We then called :meth:`~modgrammar.GrammarParser.parse_string` again with an empty string.  This didn't add any more text to the buffer, but that's ok because we already had a complete match in the buffer left over from before, so it was able to parse that and return it to us.
+In this, you can see a few things.  First, when we first called :meth:`~modgrammar.GrammarParser.parse_text`, we had a good start (the text matched the beginning of our grammar), but it wasn't complete yet, so the parser just took that info and stored it away for later (returning :const:`None` to indicate it needed more text).  The next time, we actually gave it too much text, but that's ok, it finished matching the first instance of the grammar in the text and gave us back the result.  The extra didn't get lost, though, it's still stored in there ready for parsing the next time.  We then called :meth:`~modgrammar.GrammarParser.parse_text` again with an empty string.  This didn't add any more text to the buffer, but that's ok because we already had a complete match in the buffer left over from before, so it was able to parse that and return it to us.
 
 But what if we didn't want to parse the extra text left over in the buffer with this grammar?  What if we wanted to do something else with it instead?  Well, if we put too much in, we can always get it back by checking the remainder::
 
-   >>> myparser.parse_string("Hello, my name is Inigo Montoya! Hello, my name is Fezzik!")
+   >>> myparser.parse_text("Hello, my name is Inigo Montoya! Hello, my name is Fezzik!")
    MyGrammar<'Hello', ',', 'my name is Inigo Montoya', '!'>
    >>> myparser.remainder()
    ' Hello, my name is Fezzik!'
@@ -632,10 +632,10 @@ If we're going to do something else with the remainder, though, we probably don'
    >>> myparser.char
    0
 
-:meth:`~modgrammar.GrammarParser.parse_string` Options and Other Parsing Methods
+:meth:`~modgrammar.GrammarParser.parse_text` Options and Other Parsing Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Up to now, we've been using :meth:`~modgrammar.GrammarParser.parse_string` in its most basic way, by simply passing a string of text, but :meth:`~modgrammar.GrammarParser.parse_string` also supports several optional parameters which can affect how it parses the text, as well:
+Up to now, we've been using :meth:`~modgrammar.GrammarParser.parse_text` in its most basic way, by simply passing a string of text, but :meth:`~modgrammar.GrammarParser.parse_text` also supports several optional parameters which can affect how it parses the text, as well:
 
    *reset*
       If this option is set to a true value, the parser will automatically call :meth:`~modgrammar.GrammarParser.reset` before starting to parse the supplied text.
@@ -668,9 +668,9 @@ Up to now, we've been using :meth:`~modgrammar.GrammarParser.parse_string` in it
    *bol*
       Indicates whether the parser should consider this text to be at the "beginning of a line".  This is usually not needed, and really only affects grammars that use the :const:`~modgrammar.BOL` built-in to match on beginning-of-line.  This defaults to true if we are just starting (i.e. after a :meth:`~modgrammar.GrammarParser.reset`), or if the last bit of text ended with a newline sequence, and false otherwise.  About the only time you will usually need to use this is if you are doing some unusual parsing where end-of-line is indicated by something outside the context of the text itself (even in those cases, it is often more convenient to just "fake it" by inserting newlines into the text before passing it to the parser instead).
 
-(One sometimes useful combination is to call :meth:`~modgrammar.GrammarParser.parse_string` with ``reset=True, eof=True``, which basically eliminates all buffering, and forces the parser to match (or fail to match) each input text on its own merits for each call, regardless of what may come before or after (note that there may still be a remainder after the match, though, which would be discarded on the next call))
+(One sometimes useful combination is to call :meth:`~modgrammar.GrammarParser.parse_text` with ``reset=True, eof=True``, which basically eliminates all buffering, and forces the parser to match (or fail to match) each input text on its own merits for each call, regardless of what may come before or after (note that there may still be a remainder after the match, though, which would be discarded on the next call))
 
-In addition to the basic :meth:`~modgrammar.GrammarParser.parse_string`, parser objects also have a couple of other useful methods for parsing common types of inputs.  If you have a list (or really any iterable) of text items to parse, for example, you can use :meth:`~modgrammar.GrammarParser.parse_lines` to iterate through them and return each match::
+In addition to the basic :meth:`~modgrammar.GrammarParser.parse_text`, parser objects also have a couple of other useful methods for parsing common types of inputs.  If you have a list (or really any iterable) of text items to parse, for example, you can use :meth:`~modgrammar.GrammarParser.parse_lines` to iterate through them and return each match::
 
    >>> text = ["Hello, my na", "me is Inigo Montoya! Hello, my name is Fezzik!"]
    >>> result = myparser.parse_lines(text)
@@ -679,7 +679,7 @@ In addition to the basic :meth:`~modgrammar.GrammarParser.parse_string`, parser 
    >>> list(result)
    [MyGrammar<'Hello', ',', 'my name is Inigo Montoya', '!'>, MyGrammar<'Hello', ',', 'my name is Fezzik', '!'>]
 
-Note that :meth:`~modgrammar.GrammarParser.parse_lines` is a generator method, which means it will only actually perform the parsing as each item is needed, so you can stop early if you've already gotten what you needed without incurring the extra overhead of parsing everything that might come later (It basically functions by calling :meth:`~modgrammar.GrammarParser.parse_string` as many times as necessary for each line in the input).  Note that although the method is called "parse_lines", the input does not necessarily need to be broken up on line boundaries.  Also note that you must still include newline sequences at the end of your lines (if they're important), the routine will not add them for you.
+Note that :meth:`~modgrammar.GrammarParser.parse_lines` is a generator method, which means it will only actually perform the parsing as each item is needed, so you can stop early if you've already gotten what you needed without incurring the extra overhead of parsing everything that might come later (It basically functions by calling :meth:`~modgrammar.GrammarParser.parse_text` as many times as necessary for each line in the input).  Note that although the method is called "parse_lines", the input does not necessarily need to be broken up on line boundaries.  Also note that you must still include newline sequences at the end of your lines (if they're important), the routine will not add them for you.
 
 Likewise, if you want to parse input from a file, there is a convenient :meth:`~modgrammar.GrammarParser.parse_file` method::
 
@@ -698,7 +698,7 @@ Likewise, if you want to parse input from a file, there is a convenient :meth:`~
 
 (:meth:`~modgrammar.GrammarParser.parse_file` is really just a wrapper method that opens the file, feeds its contents to :meth:`~modgrammar.GrammarParser.parse_lines`, and then closes it.)
 
-Both of these other parsing methods accept all of the same optional parameters that :meth:`~modgrammar.GrammarParser.parse_string` does (except *multi*).  In the case of :meth:`~modgrammar.GrammarParser.parse_file`, the *eof* argument defaults to true, meaning that when the end of the input file is reached, the parser will consider that to be EOF for the grammar (this can be overridden, though, if you don't want this behavior).
+Both of these other parsing methods accept all of the same optional parameters that :meth:`~modgrammar.GrammarParser.parse_text` does (except *multi*).  In the case of :meth:`~modgrammar.GrammarParser.parse_file`, the *eof* argument defaults to true, meaning that when the end of the input file is reached, the parser will consider that to be EOF for the grammar (this can be overridden, though, if you don't want this behavior).
 
 Exceptional Insight
 -------------------
@@ -707,7 +707,7 @@ Up to now, we've mostly been taking it for granted that the text you feed into t
 
 If you don't catch a :exc:`ParseError` when it is raised, it will result in a traceback looking something like the following::
 
-   >>> myparser.parse_string("Something Bogus")
+   >>> myparser.parse_text("Something Bogus")
    Traceback (most recent call last):
    ...
    modgrammar.ParseError: [line 1, column 1] Expected 'Goodbye' or 'Hello': Found 'Something Bogus'

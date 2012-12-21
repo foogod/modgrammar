@@ -43,7 +43,7 @@ Class Attributes
         *'optional'* (default)
           The grammar will automatically skip over any whitespace found between its sub-grammars (it will be "whitespace consuming").
         *'explicit'*
-          Whitespace between sub-grammars will not be treated differently than any other syntactic element.  Any whitespace which is allowed must be specified explicitly as part of the grammar definition (for example, using :const:`SPACE`), and any extra whitespace will be considered an error.
+          Whitespace between sub-grammars will not be treated differently than any other syntactic element.  Any whitespace which is allowed must be specified explicitly as part of the grammar definition (for example, using :const:`WHITESPACE`), and any extra whitespace will be considered an error.
         *'required'*
           Like *'optional'*, the grammar will skip over whitespace, but it will also require that there must be some amount of whitespace between each of its sub-grammars (if two sub-grammars occur in the input without any whitespace between them, that will be considered an error).
 
@@ -132,7 +132,7 @@ Parser Objects
 
    Methods:
 
-   .. automethod:: GrammarParser.parse_string
+   .. automethod:: GrammarParser.parse_text
    .. automethod:: GrammarParser.parse_lines
    .. automethod:: GrammarParser.parse_file
    .. automethod:: GrammarParser.remainder
@@ -215,7 +215,7 @@ The following basic grammar classes/factories are provided from which more compl
 
    Match everything up to (but not including) the next :const:`EOL`.
 
-.. data:: SPACE
+.. data:: WHITESPACE
 
    Match any string of whitespace.
 

@@ -10,11 +10,11 @@ class TestIssue1 (util.TestCase):
 
   def test_longest_samelength(self):
     grammar = OR('aaa', 'aaa')
-    o = grammar.parser().parse_string('aaaa', matchtype='longest')
+    o = grammar.parser().parse_text('aaaa', matchtype='longest')
 
   def test_shortest_samelength(self):
     grammar = OR('aaa', 'aaa')
-    o = grammar.parser().parse_string('aaaa', matchtype='shortest')
+    o = grammar.parser().parse_text('aaaa', matchtype='shortest')
 
 class TestIssue2 (util.TestCase):
   """
@@ -44,7 +44,7 @@ class TestIssue10 (util.TestCase):
   def test_except_prefix(self):
     grammar = EXCEPT('foobar', 'foo')
     try:
-      o = grammar.parser().parse_string('foobar')
+      o = grammar.parser().parse_text('foobar')
     except ParseError:
       self.fail("EXCEPT incorrectly matching on substring")
 
@@ -56,5 +56,5 @@ class TestIssue8 (util.TestCase):
 
   def test_iteration_not_followed_by(self):
     grammar = G('A', NOT_FOLLOWED_BY('A'))
-    o = grammar.parser().parse_string('AB', matchtype='all')
+    o = grammar.parser().parse_text('AB', matchtype='all')
     self.assertEqual([x.string for x in o], ['A'])

@@ -221,16 +221,16 @@ class TestRepeat1 (util.BasicGrammarTestCase):
     self.assertTrue(REPEAT('ABC').grammar_greedy)
     # Test greedy behavior
     p = REPEAT('ABC', min=0, max=3, greedy=True).parser()
-    o = p.parse_string('ABCABCABCABC', matchtype='all')
+    o = p.parse_text('ABCABCABCABC', matchtype='all')
     self.assertEqual([x.string for x in o], ['ABCABCABC', 'ABCABC', 'ABC', ''])
     # Test non-greedy behavior
     p = REPEAT('ABC', min=0, max=3, greedy=False).parser()
-    o = p.parse_string('ABCABCABCABC', matchtype='all')
+    o = p.parse_text('ABCABCABCABC', matchtype='all')
     self.assertEqual([x.string for x in o], ['', 'ABC', 'ABCABC', 'ABCABCABC'])
     # Simple test of combining greedy and non-greedy repetitions
     g = GRAMMAR(REPEAT('ABC', max=3, min=0, greedy=False), REPEAT('ABC', max=3, min=0))
     p = g.parser()
-    o = p.parse_string('ABCABCABCABCx', matchtype='all')
+    o = p.parse_text('ABCABCABCABCx', matchtype='all')
     strings = [[x.string for x in y] for y in o]
     self.assertEqual(strings, [['', 'ABCABCABC'],
                                ['', 'ABCABC'],
@@ -297,7 +297,7 @@ class TestOptional (util.BasicGrammarTestCase):
 
   def test_failmatch_is_none(self):
     p = self.grammar.parser()
-    o = p.parse_string('x')
+    o = p.parse_text('x')
     self.assertEqual(p.remainder(), 'x')
     self.assertIsNone(o)
 
@@ -306,16 +306,16 @@ class TestOptional (util.BasicGrammarTestCase):
     self.assertTrue(OPTIONAL('ABC').grammar_greedy)
     # Test greedy behavior
     p = OPTIONAL('ABC', greedy=True).parser()
-    o = p.parse_string('ABC', matchtype='all')
+    o = p.parse_text('ABC', matchtype='all')
     self.assertEqual([x and x.string for x in o], ['ABC', None])
     # Test non-greedy behavior
     p = OPTIONAL('ABC', greedy=False).parser()
-    o = p.parse_string('ABC', matchtype='all')
+    o = p.parse_text('ABC', matchtype='all')
     self.assertEqual([x and x.string for x in o], [None, 'ABC'])
     # Simple test of combining greedy and non-greedy optionals
     g = GRAMMAR(OPTIONAL('ABC', greedy=False), OPTIONAL('ABC'))
     p = g.parser()
-    o = p.parse_string('ABCABC', matchtype='all')
+    o = p.parse_text('ABCABC', matchtype='all')
     strings = [[x and x.string for x in y] for y in o]
     self.assertEqual(strings, [[None, 'ABC'],
                                [None, None],
@@ -367,10 +367,10 @@ class TestList1 (util.BasicGrammarTestCase):
 
   def test_trailing_comma(self):
     p = self.grammar.parser()
-    p.parse_string('ABC,x')
+    p.parse_text('ABC,x')
     self.assertEqual(p.remainder(), ',x')
     p.reset()
-    p.parse_string('ABC,ABC,ABC,')
+    p.parse_text('ABC,ABC,ABC,')
     self.assertEqual(p.remainder(), ',')
 
 class TestList2 (util.BasicGrammarTestCase):
@@ -435,38 +435,38 @@ class TestWord1 (util.BasicGrammarTestCase):
     g = GRAMMAR(self.grammar, 'a')
     p = g.parser()
     with self.assertRaises(ParseError):
-      p.parse_string('abcdefa') # doesn't have 'a' after the max word length
+      p.parse_text('abcdefa') # doesn't have 'a' after the max word length
     p.reset()
-    o = p.parse_string('abcdea')
+    o = p.parse_text('abcdea')
     self.assertEqual(o.tokens(), ['abcde', 'a'])
     p.reset()
-    o = p.parse_string('abcdae')
+    o = p.parse_text('abcdae')
     self.assertEqual(o.tokens(), ['abcd', 'a'])
     p.reset()
-    o = p.parse_string('abcade')
+    o = p.parse_text('abcade')
     self.assertEqual(o.tokens(), ['abc', 'a'])
     p.reset()
-    o = p.parse_string('abacde')
+    o = p.parse_text('abacde')
     self.assertEqual(o.tokens(), ['ab', 'a'])
     p.reset()
     with self.assertRaises(ParseError):
-      p.parse_string('aabcde') # has to backtrack too far
+      p.parse_text('aabcde') # has to backtrack too far
 
   def test_greedy(self):
     # Make sure the default is to be greedy
     self.assertTrue(WORD('a-z').grammar_greedy)
     # Test greedy behavior
     p = WORD('a-z', min=0, max=3, greedy=True).parser()
-    o = p.parse_string('abcd', matchtype='all')
+    o = p.parse_text('abcd', matchtype='all')
     self.assertEqual([x.string for x in o], ['abc', 'ab', 'a', ''])
     # Test non-greedy behavior
     p = WORD('a-z', min=0, max=3, greedy=False).parser()
-    o = p.parse_string('abcd', matchtype='all')
+    o = p.parse_text('abcd', matchtype='all')
     self.assertEqual([x.string for x in o], ['', 'a', 'ab', 'abc'])
     # Simple test of combining greedy and non-greedy words
     g = GRAMMAR(WORD('a-z', max=3, min=0, greedy=False), WORD('a-z', max=3, min=0))
     p = g.parser()
-    o = p.parse_string('abcdefg', matchtype='all')
+    o = p.parse_text('abcdefg', matchtype='all')
     strings = [[x.string for x in y] for y in o]
     self.assertEqual(strings, [['', 'abc'],
                                ['', 'ab'],
@@ -500,11 +500,11 @@ class TestWord2 (util.BasicGrammarTestCase):
   def test_backtrack(self):
     g = GRAMMAR(self.grammar, 'a')
     p = g.parser()
-    o = p.parse_string('Abcade')
+    o = p.parse_text('Abcade')
     self.assertEqual(o.tokens(), ['Abc', 'a'])
     g = GRAMMAR(self.grammar, 'A')
     p = g.parser()
-    o = p.parse_string('Abcade')
+    o = p.parse_text('Abcade')
     self.assertEqual(o.tokens(), ['', 'A'])
 
 class TestWord3 (util.BasicGrammarTestCase):
@@ -522,14 +522,14 @@ class TestWord3 (util.BasicGrammarTestCase):
   def test_backtrack(self):
     g = GRAMMAR(self.grammar, 'a')
     p = g.parser()
-    o = p.parse_string('abcdea')
+    o = p.parse_text('abcdea')
     self.assertEqual(o.tokens(), ['abcde', 'a'])
     p.reset()
-    o = p.parse_string('abcd a')
+    o = p.parse_text('abcd a')
     self.assertEqual(o.tokens(), ['abcd', 'a'])
     p.reset()
     with self.assertRaises(ParseError):
-      p.parse_string('abcdab') # Would be OK except for longest=True
+      p.parse_text('abcdab') # Would be OK except for longest=True
 
 class TestAnyExcept (util.BasicGrammarTestCase):
   def setUp(self):
@@ -557,21 +557,21 @@ class TestBOL (util.BasicGrammarTestCase):
 
   def test_match_fail(self):
     with self.assertRaises(ParseError):
-      self.grammar.parser().parse_string('a', bol=False)
+      self.grammar.parser().parse_text('a', bol=False)
 
   def test_mid_string(self):
     grammar = GRAMMAR(ANY, BOL)
     p = grammar.parser()
-    o = p.parse_string('a\na')
+    o = p.parse_text('a\na')
     self.assertIsNotNone(o)
     self.assertEqual(p.remainder(), 'a')
     grammar = GRAMMAR(ANY, ANY, BOL, whitespace_mode='explicit')
     p = grammar.parser()
-    o = p.parse_string('a\na')
+    o = p.parse_text('a\na')
     self.assertIsNotNone(o)
     self.assertEqual(p.remainder(), 'a')
     p.reset()
-    o = p.parse_string('a\r')
+    o = p.parse_text('a\r')
     self.assertIsNotNone(o)
     self.assertEqual(p.remainder(), '')
 
@@ -621,9 +621,9 @@ class TestANY (util.BasicGrammarTestCase):
 
 class TestSpace (util.BasicGrammarTestCase):
   def setUp(self):
-    self.grammar = SPACE
-    self.grammar_name = "SPACE"
-    self.grammar_details = "SPACE"
+    self.grammar = WHITESPACE
+    self.grammar_name = "WHITESPACE"
+    self.grammar_details = "WHITESPACE"
     self.matches_with_remainder = (' \t\r\na', '   a')
     self.fail_matches = ('a', 'a ')
     self.partials = ((' ', 'a'),)
@@ -632,7 +632,7 @@ class TestSpace (util.BasicGrammarTestCase):
     # This would normally fail the default pre/post space tests, because it has
     # grammar_whitespace_mode='explicit', but still matches fine if there's
     # whitespace at the beginning (because whitespace characters match the
-    # SPACE criteria), so we'll just skip that test in this case.
+    # WHITESPACE criteria), so we'll just skip that test in this case.
     pass
 
 class TestEOF (util.BasicGrammarTestCase):
@@ -647,7 +647,7 @@ class TestEOF (util.BasicGrammarTestCase):
     g = self.grammar
     p = g.parser()
     try:
-      o = p.parse_string('', eof=True)
+      o = p.parse_text('', eof=True)
       self.check_result('', o, True, '')
     except ParseError:
       self.fail("Got unexpected ParseError")
@@ -658,15 +658,15 @@ class TestEOF (util.BasicGrammarTestCase):
       p.reset()
       msg = '[testcase={!r}]'.format(teststr)
       with self.assertRaises(ParseError, msg=msg):
-        p.parse_string(teststr, eof=True)
+        p.parse_text(teststr, eof=True)
 
   def test_partial(self):
     g = self.grammar
     p = g.parser()
     try:
-      o = p.parse_string('')
+      o = p.parse_text('')
       self.assertIsNone(o)
-      o = p.parse_string('', eof=True)
+      o = p.parse_text('', eof=True)
       self.check_result('', o, True, '')
     except ParseError:
       self.fail("Got unexpected ParseError")
@@ -677,7 +677,7 @@ class TestEOF (util.BasicGrammarTestCase):
     try:
       for teststr in ('', ' '):
         msg = '[testcase={!r}]'.format(teststr)
-        o = p.parse_string(teststr, eof=True)
+        o = p.parse_text(teststr, eof=True)
         self.assertIsNotNone(o)
         self.assertEqual(len(p.remainder()), 0)
     except ParseError:

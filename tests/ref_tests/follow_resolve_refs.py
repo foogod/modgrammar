@@ -40,6 +40,6 @@ class ResolveRefTests (util.TestCase):
     self.assertIs(G6.grammar[0], G1)
 
   def test_parse(self):
-    o = G0.parser().parse_string('aaaaa')
+    o = G0.parser().parse_text('aaaaa')
     self.assertIsNotNone(o)
 
