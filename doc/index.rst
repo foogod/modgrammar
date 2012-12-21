@@ -32,6 +32,14 @@ Library Reference
 
    libref.rst
 
+Examples
+========
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/infix_precedence.rst
+
 Indices and Tables
 ==================
 

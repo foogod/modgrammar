@@ -36,11 +36,10 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     platforms='any',
-    packages=['modgrammar'],
+    packages=['modgrammar', 'modgrammar.examples'],
     test_suite='tests.all_tests',
     include_package_data=False,
     install_requires=[],
-    #cmdclass=dict(build_sphinx=BuildSphinxCommand),
     command_options={
         'build_sphinx': dict(
             build_dir=('setup.py', 'build'),
