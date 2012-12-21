@@ -153,13 +153,19 @@ class GrammarClass (type):
   "The metaclass for all Grammar classes"
 
   def __init__(cls, name, bases, classdict):
+    if getattr(cls, 'grammar', None) is None:
+      # This is an abstract class definition.  Don't do any of our usual setup.
+      return
     cls._hash_id = None
     if "grammar_name" not in classdict:
       cls.grammar_name = cls.__name__
     if "grammar_desc" not in classdict:
       cls.grammar_desc = cls.grammar_name
-    classdict["abstract"] = False
     cls.grammar = util.regularize(cls.grammar)
+    if not hasattr(cls, 'grammar_min'):
+      cls.grammar_min = len(cls.grammar)
+    if not hasattr(cls, 'grammar_max'):
+      cls.grammar_max = len(cls.grammar)
     tags = getattr(cls, "grammar_tags", ())
     if isinstance(tags, str):
       # This is going to be a common slip-up.. might as well handle it
@@ -534,7 +540,6 @@ class Grammar (metaclass=GrammarClass):
   To define a new grammar, you should create a new class definition, descended from :class:`Grammar`.  In this class definition, you can override several class attributes and class methods to customize the behavior of the grammar.
   """
 
-  grammar = ()
   grammar_terminal = False
   grammar_collapse = False
   grammar_greedy = True
@@ -546,8 +551,7 @@ class Grammar (metaclass=GrammarClass):
 
   @classmethod
   def __class_init__(cls, attrs):
-    cls.grammar_min = len(cls.grammar)
-    cls.grammar_max = len(cls.grammar)
+    pass
 
   @classmethod
   def parser(cls, sessiondata=None, tabs=1):
@@ -1037,16 +1041,16 @@ class AnonGrammar (Grammar):
       return (", ".join(names), nts)
 
 class Terminal (Grammar):
-  grammar = ()
   grammar_terminal = True
-  grammar_whitespace_mode = 'explicit'
-  grammar_whitespace = False
 
   @classmethod
   def grammar_details(cls, depth=-1, visited=None):
     return cls.grammar_name
 
 class Literal (Terminal):
+  grammar_whitespace_mode = 'explicit'
+  grammar_whitespace = False
+  grammar = ()
   string = ""
   grammar_collapse_skip = True
   grammar_hashattrs = ('string',)
@@ -1101,6 +1105,9 @@ def LITERAL(string, **kwargs):
   return GrammarClass("<LITERAL>", (Literal,), cdict)
 
 class ANY (Terminal):
+  grammar_whitespace_mode = 'explicit'
+  grammar_whitespace = False
+  grammar = ()
   grammar_name = "ANY"
   grammar_desc = "any character"
 
@@ -1115,6 +1122,9 @@ class ANY (Terminal):
     yield error_result(index, cls)
 
 class EMPTY (Terminal):
+  grammar_whitespace_mode = 'explicit'
+  grammar_whitespace = False
+  grammar = ()
   grammar_collapse = True
   grammar_collapse_skip = True
   grammar_desc = "(nothing)"
@@ -1436,6 +1446,9 @@ def WORD(startchars, restchars=None, longest=False, **kwargs):
   return GrammarClass("<WORD>", (Word,), cdict)
 
 class Word (Terminal):
+  grammar_whitespace_mode = 'explicit'
+  grammar_whitespace = False
+  grammar = ()
   startchars = ""
   restchars = None
   longest_only = False
@@ -1699,6 +1712,9 @@ def ANY_EXCEPT(charlist, **kwargs):
 
 # FIXME: whitespace at beginning of line
 class BOL (Terminal):
+  grammar_whitespace_mode = 'explicit'
+  grammar_whitespace = False
+  grammar = ()
   grammar_desc = "beginning of line"
 
   @classmethod
@@ -1711,6 +1727,9 @@ class BOL (Terminal):
     yield error_result(index, cls)
 
 class EOF (Terminal):
+  grammar_whitespace_mode = 'explicit'
+  grammar_whitespace = False
+  grammar = ()
   grammar_desc = "end of file"
 
   @classmethod
@@ -1720,6 +1739,8 @@ class EOF (Terminal):
     yield error_result(index, cls)
 
 class EOL (Terminal):
+  grammar_whitespace_mode = 'explicit'
+  grammar_whitespace = False
   grammar_desc = "end of line"
   grammar_collapse_skip = True
   grammar = (L("\n\r") | L("\r\n") | L("\r") | L("\n"))
