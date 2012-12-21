@@ -5,6 +5,8 @@ from . import util
 # * corner cases for parse_text
 # * parse_lines
 
+grammar_whitespace_mode = 'optional'
+
 class TestParseOpts (util.TestCase):
   def test_matchtype_or(self):
     grammar = OR('aa', 'aaaa', 'a', 'aaa')

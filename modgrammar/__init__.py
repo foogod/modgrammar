@@ -1,7 +1,6 @@
 import sys
 import re
 import textwrap
-import warnings
 from . import util
 from .util import error_result
 
@@ -176,6 +175,9 @@ class GrammarClass (type):
       whitespace = sys.modules[cls.__module__].__dict__.get("grammar_whitespace", grammar_whitespace)
       cls.grammar_whitespace = whitespace
     if "grammar_whitespace_mode" not in classdict and cls.grammar_whitespace_mode is None:
+      mod = sys.modules[cls.__module__]
+      if not hasattr(mod, "grammar_whitespace_mode"):
+        util.depwarning("default whitespace mode will be changing.  For future compatibility, set grammar_whitespace_mode='optional' explicitly.", module=mod)
       whitespace_mode = sys.modules[cls.__module__].__dict__.get("grammar_whitespace_mode", grammar_whitespace_mode)
       cls.grammar_whitespace_mode = whitespace_mode
     cls.__class_init__(classdict)
@@ -469,7 +471,7 @@ class GrammarParser:
       return None
 
   def parse_string(self, *args, **kwargs):
-    warnings.warn("parse_string syntax will be changing: For future compatibility, use parse_text instead.", DeprecationWarning, stacklevel=2)
+    util.depwarning("parse_string syntax will be changing: For future compatibility, use parse_text instead.")
     return self.parse_text(*args, **kwargs)
 
   def parse_lines(self, lines, bol=False, eof=False, reset=False, data=None, matchtype='first'):
@@ -921,7 +923,7 @@ class Grammar (metaclass=GrammarClass):
 
     **Note:** This method is deprecated.  Its functionality is now part of :meth:`find_all` instead.
     """
-    warnings.warn("find_tag_all is deprecated: Use find_all instead.", DeprecationWarning, stacklevel=2)
+    util.depwarning("find_tag_all is deprecated: Use find_all instead.")
     func = lambda e, l: l in getattr(e, "grammar_tags", ())
     return list(self._search_recursive(func, True, tag_path))
 
@@ -931,7 +933,7 @@ class Grammar (metaclass=GrammarClass):
 
     **Note:** This method is deprecated.  Its functionality is now part of :meth:`find` instead.
     """
-    warnings.warn("find_tag is deprecated: Use find instead.", DeprecationWarning, stacklevel=2)
+    util.depwarning("find_tag is deprecated: Use find instead.")
     func = lambda e, l: l in getattr(e, "grammar_tags", ())
     try:
       return next(self._search_recursive(func, True, tag_path))
@@ -1773,7 +1775,7 @@ class SPACE (Word):
 
   @classmethod
   def grammar_parse(cls, text, index, sessiondata):
-    warnings.warn("The meaning of SPACE will be changing: For future compatibility, use WHITESPACE instead.", DeprecationWarning)
+    util.depwarning("The meaning of SPACE will be changing: For future compatibility, use WHITESPACE instead.", (util.get_calling_stacklevel() or 3)-1)
     s = Word.grammar_parse.__func__(cls, text, index, sessiondata)
     offset, obj = next(s)
     try:

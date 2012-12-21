@@ -1,6 +1,8 @@
 from modgrammar import *
 from .. import util
 
+grammar_whitespace_mode = 'optional'
+
 class G1 (Grammar):
   grammar = (L('a'))
 

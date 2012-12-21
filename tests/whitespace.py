@@ -6,6 +6,8 @@ from modgrammar import OR_Operator
 from modgrammar.util import RepeatingTuple
 from . import util
 
+grammar_whitespace_mode = 'optional'
+
 WSRE = re.compile('-*')
 
 ###############################################################################

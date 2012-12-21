@@ -2,6 +2,8 @@ from modgrammar import *
 from modgrammar.util import RepeatingTuple
 from .. import util
 
+grammar_whitespace_mode = 'optional'
+
 class G0 (Grammar):
   grammar = (REF('G1', default=L('x')))
 

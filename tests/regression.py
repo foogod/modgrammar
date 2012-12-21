@@ -2,6 +2,8 @@ import modgrammar
 from modgrammar import *
 from . import util
 
+grammar_whitespace_mode = 'optional'
+
 class TestIssue1 (util.TestCase):
   """
   Issue 1: Fails with traceback if matchtype="longest" or "shortest" and

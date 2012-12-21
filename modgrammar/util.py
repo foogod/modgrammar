@@ -1,6 +1,7 @@
 import re
 import traceback
 import sys
+import warnings
 
 import modgrammar
 
@@ -92,8 +93,10 @@ def make_classdict(base, grammar, kwargs, **defaults):
     whitespace = mdict.get("grammar_whitespace", modgrammar.grammar_whitespace)
     cdict["grammar_whitespace"] = whitespace
   if not "grammar_whitespace_mode" in cdict and base.grammar_whitespace_mode is None:
-    mdict = get_calling_module().__dict__
-    whitespace_mode = mdict.get("grammar_whitespace_mode", modgrammar.grammar_whitespace_mode)
+    mod = get_calling_module()
+    if not hasattr(mod, "grammar_whitespace_mode"):
+      depwarning("default whitespace mode will be changing.  For future compatibility, set grammar_whitespace_mode='optional' explicitly.", get_calling_stacklevel() or 3, mod)
+    whitespace_mode = mod.__dict__.get("grammar_whitespace_mode", modgrammar.grammar_whitespace_mode)
     cdict["grammar_whitespace_mode"] = whitespace_mode
   return cdict
 
@@ -115,21 +118,29 @@ def calc_line_col(string, count, line=0, col=0, tabs=1):
   return (line, col)
 
 def get_calling_module(stack=None):
+  return get_calling_modinfo(stack)[2]
+
+def get_calling_stacklevel(stack=None):
+  return get_calling_modinfo(stack)[0]
+
+def get_calling_modinfo(stack=None):
   if stack is None:
     stack = traceback.extract_stack(None)
+  stacklevel = -1
   for s in reversed(stack):
+    stacklevel += 1
     filename = s[0]
     if filename == "<stdin>":
-      return sys.modules["__main__"]
+      return (stacklevel, s, sys.modules["__main__"])
     elif filename == __file__ or filename == modgrammar.__file__:
       continue
     else:
       for m in sys.modules.values():
         if getattr(m, "__file__", None) == filename:
-          return m
+          return (stacklevel, s, m)
   # For some reason, we weren't able to determine the module.  Not much we
   # can do here..
-  return None
+  return (None, None, modgrammar)
 
 class RepeatingTuple (tuple):
   def __new__(cls, first_item, successive_items, len=None):
@@ -198,3 +209,11 @@ def get_found_txt(buf, pos):
     return repr(found_txt)
   else:
     return "(end of line)"
+
+depwarnings_issued = set()
+
+def depwarning(msg, stacklevel=2, module=None):
+  winfo = (module, msg)
+  if not winfo in depwarnings_issued:
+    depwarnings_issued.add(winfo)
+    warnings.warn("modgrammar: " + msg, DeprecationWarning, stacklevel=stacklevel+1)
