@@ -8,7 +8,7 @@ from . import util
 
 grammar_whitespace_mode = 'optional'
 
-WSRE = re.compile('-*')
+WS_CUSTOM = re.compile('-*')
 
 ###############################################################################
 # These tests simply verify that the grammar_whitespace attribute gets set
@@ -32,282 +32,219 @@ WSRE = re.compile('-*')
 class G_Default (Grammar):
   grammar = (ONE_OR_MORE('A'), 'B')
 
-class G_Default_True (Grammar):
+class G_Default_DEF (Grammar):
   grammar = (ONE_OR_MORE('A'), 'B')
-  grammar_whitespace = True
+  grammar_whitespace = WS_DEFAULT
 
-class G_Default_False (Grammar):
+class G_Default_CUST (Grammar):
   grammar = (ONE_OR_MORE('A'), 'B')
-  grammar_whitespace = False
+  grammar_whitespace = WS_CUSTOM
 
 default_grammars = (
-  ("G_Default", G_Default, True),
-  ("G_Default_True", G_Default_True, True),
-  ("G_Default_False", G_Default_False, False),
-  ("GRAMMAR('A', 'B')", GRAMMAR('A', 'B'), True),
-  ("G('A', 'B')", G('A', 'B'), True),
-  ("REPEAT(L('A'))", REPEAT(L('A')), True),
-  ("ZERO_OR_MORE(L('A'))", ZERO_OR_MORE(L('A')), True),
-  ("ONE_OR_MORE(L('A'))", ONE_OR_MORE(L('A')), True),
-  ("LIST_OF(L('A'), sep=L('A'))", LIST_OF(L('A'), sep=L('A')), True),
-  ("LITERAL('A')", LITERAL('A'), True),
-  ("L('A')", L('A'), True),
-  ("WORD('A')", WORD('A'), True),
-  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), True),
-  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), True),
-  ("L('A') | L('B')", L('A') | L('B'), True),
-  ("OPTIONAL(L('A'))", OPTIONAL(L('A')), True),
-  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), True),
+  ("G_Default", G_Default, WS_DEFAULT),
+  ("G_Default_DEF", G_Default_DEF, WS_DEFAULT),
+  ("G_Default_CUST", G_Default_CUST, WS_CUSTOM),
+  ("GRAMMAR('A', 'B')", GRAMMAR('A', 'B'), WS_DEFAULT),
+  ("G('A', 'B')", G('A', 'B'), WS_DEFAULT),
+  ("REPEAT(L('A'))", REPEAT(L('A')), WS_DEFAULT),
+  ("ZERO_OR_MORE(L('A'))", ZERO_OR_MORE(L('A')), WS_DEFAULT),
+  ("ONE_OR_MORE(L('A'))", ONE_OR_MORE(L('A')), WS_DEFAULT),
+  ("LIST_OF(L('A'), sep=L('A'))", LIST_OF(L('A'), sep=L('A')), WS_DEFAULT),
+  ("LITERAL('A')", LITERAL('A'), WS_DEFAULT),
+  ("L('A')", L('A'), WS_DEFAULT),
+  ("WORD('A')", WORD('A'), WS_DEFAULT),
+  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), WS_DEFAULT),
+  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), WS_DEFAULT),
+  ("L('A') | L('B')", L('A') | L('B'), WS_DEFAULT),
+  ("OPTIONAL(L('A'))", OPTIONAL(L('A')), WS_DEFAULT),
+  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), WS_DEFAULT),
   # GRAMMAR with a single element just returns that element, so the following
   # should resolve to LITERALs:
-  ("GRAMMAR('A')", GRAMMAR('A'), True),
-  ("G('A')", G('A'), True),
+  ("GRAMMAR('A')", GRAMMAR('A'), WS_DEFAULT),
+  ("G('A')", G('A'), WS_DEFAULT),
 
-  # Override False:
-  ("GRAMMAR('A', whitespace=False)", GRAMMAR('A', whitespace=False), False),
-  ("G('A', whitespace=False)", G('A', whitespace=False), False),
-  ("LITERAL('A', whitespace=False)", LITERAL('A', whitespace=False), False),
-  ("L('A', whitespace=False)", L('A', whitespace=False), False),
-  ("WORD('A', whitespace=False)", WORD('A', whitespace=False), False),
-  ("ANY_EXCEPT('A', whitespace=False)", ANY_EXCEPT('A', whitespace=False), False),
-  ("OR(L('A'), L('B'), whitespace=False)", OR(L('A'), L('B'), whitespace=False), False),
-  ("EXCEPT(L('A'), L('B'), whitespace=False)", EXCEPT(L('A'), L('B'), whitespace=False), False),
-  ("REPEAT(L('A'), whitespace=False)", REPEAT(L('A'), whitespace=False), False),
-  ("OPTIONAL(L('A'), whitespace=False)", OPTIONAL(L('A'), whitespace=False), False),
-  ("ZERO_OR_MORE(L('A'), whitespace=False)", ZERO_OR_MORE(L('A'), whitespace=False), False),
-  ("ONE_OR_MORE(L('A'), whitespace=False)", ONE_OR_MORE(L('A'), whitespace=False), False),
-  ("LIST_OF(L('A'), sep=L('A'), whitespace=False)", LIST_OF(L('A'), sep=L('A'), whitespace=False), False),
+  # Override WS_DEFAULT:
+  ("GRAMMAR('A', whitespace=WS_DEFAULT)", GRAMMAR('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("G('A', whitespace=WS_DEFAULT)", G('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("LITERAL('A', whitespace=WS_DEFAULT)", LITERAL('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("L('A', whitespace=WS_DEFAULT)", L('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("WORD('A', whitespace=WS_DEFAULT)", WORD('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("ANY_EXCEPT('A', whitespace=WS_DEFAULT)", ANY_EXCEPT('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("OR(L('A'), L('B'), whitespace=WS_DEFAULT)", OR(L('A'), L('B'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("EXCEPT(L('A'), L('B'), whitespace=WS_DEFAULT)", EXCEPT(L('A'), L('B'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("REPEAT(L('A'), whitespace=WS_DEFAULT)", REPEAT(L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("OPTIONAL(L('A'), whitespace=WS_DEFAULT)", OPTIONAL(L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("ZERO_OR_MORE(L('A'), whitespace=WS_DEFAULT)", ZERO_OR_MORE(L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("ONE_OR_MORE(L('A'), whitespace=WS_DEFAULT)", ONE_OR_MORE(L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("LIST_OF(L('A'), sep=L('A'), whitespace=WS_DEFAULT)", LIST_OF(L('A'), sep=L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
 
-  # Override True:
-  ("GRAMMAR('A', whitespace=True)", GRAMMAR('A', whitespace=True), True),
-  ("G('A', whitespace=True)", G('A', whitespace=True), True),
-  ("LITERAL('A', whitespace=True)", LITERAL('A', whitespace=True), True),
-  ("L('A', whitespace=True)", L('A', whitespace=True), True),
-  ("WORD('A', whitespace=True)", WORD('A', whitespace=True), True),
-  ("ANY_EXCEPT('A', whitespace=True)", ANY_EXCEPT('A', whitespace=True), True),
-  ("OR(L('A'), L('B'), whitespace=True)", OR(L('A'), L('B'), whitespace=True), True),
-  ("EXCEPT(L('A'), L('B'), whitespace=True)", EXCEPT(L('A'), L('B'), whitespace=True), True),
-  ("REPEAT(L('A'), whitespace=True)", REPEAT(L('A'), whitespace=True), True),
-  ("OPTIONAL(L('A'), whitespace=True)", OPTIONAL(L('A'), whitespace=True), True),
-  ("ZERO_OR_MORE(L('A'), whitespace=True)", ZERO_OR_MORE(L('A'), whitespace=True), True),
-  ("ONE_OR_MORE(L('A'), whitespace=True)", ONE_OR_MORE(L('A'), whitespace=True), True),
-  ("LIST_OF(L('A'), sep=L('A'), whitespace=True)", LIST_OF(L('A'), sep=L('A'), whitespace=True), True),
+  # Override WS_CUSTOM:
+  ("GRAMMAR('A', whitespace=WS_CUSTOM)", GRAMMAR('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("G('A', whitespace=WS_CUSTOM)", G('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("LITERAL('A', whitespace=WS_CUSTOM)", LITERAL('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("L('A', whitespace=WS_CUSTOM)", L('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("WORD('A', whitespace=WS_CUSTOM)", WORD('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("ANY_EXCEPT('A', whitespace=WS_CUSTOM)", ANY_EXCEPT('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("OR(L('A'), L('B'), whitespace=WS_CUSTOM)", OR(L('A'), L('B'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("EXCEPT(L('A'), L('B'), whitespace=WS_CUSTOM)", EXCEPT(L('A'), L('B'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("REPEAT(L('A'), whitespace=WS_CUSTOM)", REPEAT(L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("OPTIONAL(L('A'), whitespace=WS_CUSTOM)", OPTIONAL(L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("ZERO_OR_MORE(L('A'), whitespace=WS_CUSTOM)", ZERO_OR_MORE(L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("ONE_OR_MORE(L('A'), whitespace=WS_CUSTOM)", ONE_OR_MORE(L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("LIST_OF(L('A'), sep=L('A'), whitespace=WS_CUSTOM)", LIST_OF(L('A'), sep=L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
 )
 
-grammar_whitespace = False
+grammar_whitespace = WS_DEFAULT
 
-class G_False (Grammar):
+class G_DEF (Grammar):
   grammar = (ONE_OR_MORE('A'), 'B')
 
-class G_False_True (Grammar):
+class G_DEF_CUST (Grammar):
   grammar = (ONE_OR_MORE('A'), 'B')
-  grammar_whitespace = True
+  grammar_whitespace = WS_CUSTOM
 
-class G_False_False (Grammar):
+class G_DEF_DEF (Grammar):
   grammar = (ONE_OR_MORE('A'), 'B')
-  grammar_whitespace = False
+  grammar_whitespace = WS_DEFAULT
 
-modfalse_grammars = (
-  ("G_False", G_False, False),
-  ("G_False_True", G_False_True, True),
-  ("G_False_False", G_False_False, False),
-  ("GRAMMAR('A', 'B')", GRAMMAR('A', 'B'), False),
-  ("G('A', 'B')", G('A', 'B'), False),
-  ("REPEAT(L('A'))", REPEAT(L('A')), False),
-  ("ZERO_OR_MORE(L('A'))", ZERO_OR_MORE(L('A')), False),
-  ("ONE_OR_MORE(L('A'))", ONE_OR_MORE(L('A')), False),
-  ("LIST_OF(L('A'), sep=L('A'))", LIST_OF(L('A'), sep=L('A')), False),
-  ("LITERAL('A')", LITERAL('A'), False),
-  ("L('A')", L('A'), False),
-  ("WORD('A')", WORD('A'), False),
-  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), False),
-  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), False),
-  ("L('A') | L('B')", L('A') | L('B'), False),
-  ("OPTIONAL(L('A'))", OPTIONAL(L('A')), False),
-  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), False),
+moddef_grammars = (
+  ("G_DEF", G_DEF, WS_DEFAULT),
+  ("G_DEF_CUST", G_DEF_CUST, WS_CUSTOM),
+  ("G_DEF_DEF", G_DEF_DEF, WS_DEFAULT),
+  ("GRAMMAR('A', 'B')", GRAMMAR('A', 'B'), WS_DEFAULT),
+  ("G('A', 'B')", G('A', 'B'), WS_DEFAULT),
+  ("REPEAT(L('A'))", REPEAT(L('A')), WS_DEFAULT),
+  ("ZERO_OR_MORE(L('A'))", ZERO_OR_MORE(L('A')), WS_DEFAULT),
+  ("ONE_OR_MORE(L('A'))", ONE_OR_MORE(L('A')), WS_DEFAULT),
+  ("LIST_OF(L('A'), sep=L('A'))", LIST_OF(L('A'), sep=L('A')), WS_DEFAULT),
+  ("LITERAL('A')", LITERAL('A'), WS_DEFAULT),
+  ("L('A')", L('A'), WS_DEFAULT),
+  ("WORD('A')", WORD('A'), WS_DEFAULT),
+  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), WS_DEFAULT),
+  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), WS_DEFAULT),
+  ("L('A') | L('B')", L('A') | L('B'), WS_DEFAULT),
+  ("OPTIONAL(L('A'))", OPTIONAL(L('A')), WS_DEFAULT),
+  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), WS_DEFAULT),
   # GRAMMAR with a single element just returns that element, so the following
   # should resolve to LITERALs:
-  ("GRAMMAR('A')", GRAMMAR('A'), False),
-  ("G('A')", G('A'), False),
+  ("GRAMMAR('A')", GRAMMAR('A'), WS_DEFAULT),
+  ("G('A')", G('A'), WS_DEFAULT),
 
-  # Override False:
-  ("GRAMMAR('A', whitespace=False)", GRAMMAR('A', whitespace=False), False),
-  ("G('A', whitespace=False)", G('A', whitespace=False), False),
-  ("LITERAL('A', whitespace=False)", LITERAL('A', whitespace=False), False),
-  ("L('A', whitespace=False)", L('A', whitespace=False), False),
-  ("WORD('A', whitespace=False)", WORD('A', whitespace=False), False),
-  ("ANY_EXCEPT('A', whitespace=False)", ANY_EXCEPT('A', whitespace=False), False),
-  ("OR(L('A'), L('B'), whitespace=False)", OR(L('A'), L('B'), whitespace=False), False),
-  ("EXCEPT(L('A'), L('B'), whitespace=False)", EXCEPT(L('A'), L('B'), whitespace=False), False),
-  ("REPEAT(L('A'), whitespace=False)", REPEAT(L('A'), whitespace=False), False),
-  ("OPTIONAL(L('A'), whitespace=False)", OPTIONAL(L('A'), whitespace=False), False),
-  ("ZERO_OR_MORE(L('A'), whitespace=False)", ZERO_OR_MORE(L('A'), whitespace=False), False),
-  ("ONE_OR_MORE(L('A'), whitespace=False)", ONE_OR_MORE(L('A'), whitespace=False), False),
-  ("LIST_OF(L('A'), sep=L('A'), whitespace=False)", LIST_OF(L('A'), sep=L('A'), whitespace=False), False),
+  # Override WS_DEFAULT:
+  ("GRAMMAR('A', whitespace=WS_DEFAULT)", GRAMMAR('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("G('A', whitespace=WS_DEFAULT)", G('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("LITERAL('A', whitespace=WS_DEFAULT)", LITERAL('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("L('A', whitespace=WS_DEFAULT)", L('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("WORD('A', whitespace=WS_DEFAULT)", WORD('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("ANY_EXCEPT('A', whitespace=WS_DEFAULT)", ANY_EXCEPT('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("OR(L('A'), L('B'), whitespace=WS_DEFAULT)", OR(L('A'), L('B'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("EXCEPT(L('A'), L('B'), whitespace=WS_DEFAULT)", EXCEPT(L('A'), L('B'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("REPEAT(L('A'), whitespace=WS_DEFAULT)", REPEAT(L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("OPTIONAL(L('A'), whitespace=WS_DEFAULT)", OPTIONAL(L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("ZERO_OR_MORE(L('A'), whitespace=WS_DEFAULT)", ZERO_OR_MORE(L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("ONE_OR_MORE(L('A'), whitespace=WS_DEFAULT)", ONE_OR_MORE(L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("LIST_OF(L('A'), sep=L('A'), whitespace=WS_DEFAULT)", LIST_OF(L('A'), sep=L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
 
-  # Override True:
-  ("GRAMMAR('A', whitespace=True)", GRAMMAR('A', whitespace=True), True),
-  ("G('A', whitespace=True)", G('A', whitespace=True), True),
-  ("LITERAL('A', whitespace=True)", LITERAL('A', whitespace=True), True),
-  ("L('A', whitespace=True)", L('A', whitespace=True), True),
-  ("WORD('A', whitespace=True)", WORD('A', whitespace=True), True),
-  ("ANY_EXCEPT('A', whitespace=True)", ANY_EXCEPT('A', whitespace=True), True),
-  ("OR(L('A'), L('B'), whitespace=True)", OR(L('A'), L('B'), whitespace=True), True),
-  ("EXCEPT(L('A'), L('B'), whitespace=True)", EXCEPT(L('A'), L('B'), whitespace=True), True),
-  ("REPEAT(L('A'), whitespace=True)", REPEAT(L('A'), whitespace=True), True),
-  ("OPTIONAL(L('A'), whitespace=True)", OPTIONAL(L('A'), whitespace=True), True),
-  ("ZERO_OR_MORE(L('A'), whitespace=True)", ZERO_OR_MORE(L('A'), whitespace=True), True),
-  ("ONE_OR_MORE(L('A'), whitespace=True)", ONE_OR_MORE(L('A'), whitespace=True), True),
-  ("LIST_OF(L('A'), sep=L('A'), whitespace=True)", LIST_OF(L('A'), sep=L('A'), whitespace=True), True),
+  # Override WS_CUSTOM:
+  ("GRAMMAR('A', whitespace=WS_CUSTOM)", GRAMMAR('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("G('A', whitespace=WS_CUSTOM)", G('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("LITERAL('A', whitespace=WS_CUSTOM)", LITERAL('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("L('A', whitespace=WS_CUSTOM)", L('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("WORD('A', whitespace=WS_CUSTOM)", WORD('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("ANY_EXCEPT('A', whitespace=WS_CUSTOM)", ANY_EXCEPT('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("OR(L('A'), L('B'), whitespace=WS_CUSTOM)", OR(L('A'), L('B'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("EXCEPT(L('A'), L('B'), whitespace=WS_CUSTOM)", EXCEPT(L('A'), L('B'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("REPEAT(L('A'), whitespace=WS_CUSTOM)", REPEAT(L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("OPTIONAL(L('A'), whitespace=WS_CUSTOM)", OPTIONAL(L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("ZERO_OR_MORE(L('A'), whitespace=WS_CUSTOM)", ZERO_OR_MORE(L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("ONE_OR_MORE(L('A'), whitespace=WS_CUSTOM)", ONE_OR_MORE(L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("LIST_OF(L('A'), sep=L('A'), whitespace=WS_CUSTOM)", LIST_OF(L('A'), sep=L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
 )
 
-grammar_whitespace = True
+grammar_whitespace = WS_CUSTOM
 
-class G_True (Grammar):
+class G_CUST (Grammar):
   grammar = (ONE_OR_MORE('A'), 'B')
 
-class G_True_True (Grammar):
+class G_CUST_CUST (Grammar):
   grammar = (ONE_OR_MORE('A'), 'B')
-  grammar_whitespace = True
+  grammar_whitespace = WS_CUSTOM
 
-class G_True_False (Grammar):
+class G_CUST_DEF (Grammar):
   grammar = (ONE_OR_MORE('A'), 'B')
-  grammar_whitespace = False
+  grammar_whitespace = WS_DEFAULT
 
-modtrue_grammars = (
-  ("G_True", G_True, True),
-  ("G_True_True", G_True_True, True),
-  ("G_True_False", G_True_False, False),
-  ("GRAMMAR('A', 'B')", GRAMMAR('A', 'B'), True),
-  ("G('A', 'B')", G('A', 'B'), True),
-  ("REPEAT(L('A'))", REPEAT(L('A')), True),
-  ("ZERO_OR_MORE(L('A'))", ZERO_OR_MORE(L('A')), True),
-  ("ONE_OR_MORE(L('A'))", ONE_OR_MORE(L('A')), True),
-  ("LIST_OF(L('A'), sep=L('A'))", LIST_OF(L('A'), sep=L('A')), True),
-  ("LITERAL('A')", LITERAL('A'), True),
-  ("L('A')", L('A'), True),
-  ("WORD('A')", WORD('A'), True),
-  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), True),
-  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), True),
-  ("L('A') | L('B')", L('A') | L('B'), True),
-  ("OPTIONAL(L('A'))", OPTIONAL(L('A')), True),
-  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), True),
+modcust_grammars = (
+  ("G_CUST", G_CUST, WS_CUSTOM),
+  ("G_CUST_CUST", G_CUST_CUST, WS_CUSTOM),
+  ("G_CUST_DEF", G_CUST_DEF, WS_DEFAULT),
+  ("GRAMMAR('A', 'B')", GRAMMAR('A', 'B'), WS_CUSTOM),
+  ("G('A', 'B')", G('A', 'B'), WS_CUSTOM),
+  ("REPEAT(L('A'))", REPEAT(L('A')), WS_CUSTOM),
+  ("ZERO_OR_MORE(L('A'))", ZERO_OR_MORE(L('A')), WS_CUSTOM),
+  ("ONE_OR_MORE(L('A'))", ONE_OR_MORE(L('A')), WS_CUSTOM),
+  ("LIST_OF(L('A'), sep=L('A'))", LIST_OF(L('A'), sep=L('A')), WS_CUSTOM),
+  ("LITERAL('A')", LITERAL('A'), WS_CUSTOM),
+  ("L('A')", L('A'), WS_CUSTOM),
+  ("WORD('A')", WORD('A'), WS_CUSTOM),
+  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), WS_CUSTOM),
+  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), WS_CUSTOM),
+  ("L('A') | L('B')", L('A') | L('B'), WS_CUSTOM),
+  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), WS_CUSTOM),
   # GRAMMAR with a single element just returns that element, so the following
   # should resolve to LITERALs:
-  ("GRAMMAR('A')", GRAMMAR('A'), True),
-  ("G('A')", G('A'), True),
+  ("GRAMMAR('A')", GRAMMAR('A'), WS_CUSTOM),
+  ("G('A')", G('A'), WS_CUSTOM),
 
-  # Override False:
-  ("GRAMMAR('A', whitespace=False)", GRAMMAR('A', whitespace=False), False),
-  ("G('A', whitespace=False)", G('A', whitespace=False), False),
-  ("LITERAL('A', whitespace=False)", LITERAL('A', whitespace=False), False),
-  ("L('A', whitespace=False)", L('A', whitespace=False), False),
-  ("WORD('A', whitespace=False)", WORD('A', whitespace=False), False),
-  ("ANY_EXCEPT('A', whitespace=False)", ANY_EXCEPT('A', whitespace=False), False),
-  ("OR(L('A'), L('B'), whitespace=False)", OR(L('A'), L('B'), whitespace=False), False),
-  ("EXCEPT(L('A'), L('B'), whitespace=False)", EXCEPT(L('A'), L('B'), whitespace=False), False),
-  ("REPEAT(L('A'), whitespace=False)", REPEAT(L('A'), whitespace=False), False),
-  ("OPTIONAL(L('A'), whitespace=False)", OPTIONAL(L('A'), whitespace=False), False),
-  ("ZERO_OR_MORE(L('A'), whitespace=False)", ZERO_OR_MORE(L('A'), whitespace=False), False),
-  ("ONE_OR_MORE(L('A'), whitespace=False)", ONE_OR_MORE(L('A'), whitespace=False), False),
-  ("LIST_OF(L('A'), sep=L('A'), whitespace=False)", LIST_OF(L('A'), sep=L('A'), whitespace=False), False),
+  # Override WS_DEFAULT:
+  ("GRAMMAR('A', whitespace=WS_DEFAULT)", GRAMMAR('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("G('A', whitespace=WS_DEFAULT)", G('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("LITERAL('A', whitespace=WS_DEFAULT)", LITERAL('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("L('A', whitespace=WS_DEFAULT)", L('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("WORD('A', whitespace=WS_DEFAULT)", WORD('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("ANY_EXCEPT('A', whitespace=WS_DEFAULT)", ANY_EXCEPT('A', whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("OR(L('A'), L('B'), whitespace=WS_DEFAULT)", OR(L('A'), L('B'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("EXCEPT(L('A'), L('B'), whitespace=WS_DEFAULT)", EXCEPT(L('A'), L('B'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("REPEAT(L('A'), whitespace=WS_DEFAULT)", REPEAT(L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("OPTIONAL(L('A'), whitespace=WS_DEFAULT)", OPTIONAL(L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("ZERO_OR_MORE(L('A'), whitespace=WS_DEFAULT)", ZERO_OR_MORE(L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("ONE_OR_MORE(L('A'), whitespace=WS_DEFAULT)", ONE_OR_MORE(L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
+  ("LIST_OF(L('A'), sep=L('A'), whitespace=WS_DEFAULT)", LIST_OF(L('A'), sep=L('A'), whitespace=WS_DEFAULT), WS_DEFAULT),
 
-  # Override True:
-  ("GRAMMAR('A', whitespace=True)", GRAMMAR('A', whitespace=True), True),
-  ("G('A', whitespace=True)", G('A', whitespace=True), True),
-  ("LITERAL('A', whitespace=True)", LITERAL('A', whitespace=True), True),
-  ("L('A', whitespace=True)", L('A', whitespace=True), True),
-  ("WORD('A', whitespace=True)", WORD('A', whitespace=True), True),
-  ("ANY_EXCEPT('A', whitespace=True)", ANY_EXCEPT('A', whitespace=True), True),
-  ("OR(L('A'), L('B'), whitespace=True)", OR(L('A'), L('B'), whitespace=True), True),
-  ("EXCEPT(L('A'), L('B'), whitespace=True)", EXCEPT(L('A'), L('B'), whitespace=True), True),
-  ("REPEAT(L('A'), whitespace=True)", REPEAT(L('A'), whitespace=True), True),
-  ("OPTIONAL(L('A'), whitespace=True)", OPTIONAL(L('A'), whitespace=True), True),
-  ("ZERO_OR_MORE(L('A'), whitespace=True)", ZERO_OR_MORE(L('A'), whitespace=True), True),
-  ("ONE_OR_MORE(L('A'), whitespace=True)", ONE_OR_MORE(L('A'), whitespace=True), True),
-  ("LIST_OF(L('A'), sep=L('A'), whitespace=True)", LIST_OF(L('A'), sep=L('A'), whitespace=True), True),
-)
-
-grammar_whitespace = WSRE
-
-class G_WSRE (Grammar):
-  grammar = (ONE_OR_MORE('A'), 'B')
-
-class G_WSRE_True (Grammar):
-  grammar = (ONE_OR_MORE('A'), 'B')
-  grammar_whitespace = True
-
-class G_WSRE_False (Grammar):
-  grammar = (ONE_OR_MORE('A'), 'B')
-  grammar_whitespace = False
-
-modwsre_grammars = (
-  ("G_WSRE", G_WSRE, WSRE),
-  ("G_WSRE_True", G_WSRE_True, True),
-  ("G_WSRE_False", G_WSRE_False, False),
-  ("GRAMMAR('A', 'B')", GRAMMAR('A', 'B'), WSRE),
-  ("G('A', 'B')", G('A', 'B'), WSRE),
-  ("REPEAT(L('A'))", REPEAT(L('A')), WSRE),
-  ("ZERO_OR_MORE(L('A'))", ZERO_OR_MORE(L('A')), WSRE),
-  ("ONE_OR_MORE(L('A'))", ONE_OR_MORE(L('A')), WSRE),
-  ("LIST_OF(L('A'), sep=L('A'))", LIST_OF(L('A'), sep=L('A')), WSRE),
-  ("LITERAL('A')", LITERAL('A'), WSRE),
-  ("L('A')", L('A'), WSRE),
-  ("WORD('A')", WORD('A'), WSRE),
-  ("ANY_EXCEPT('A')", ANY_EXCEPT('A'), WSRE),
-  ("OR(L('A'), L('B'))", OR(L('A'), L('B')), WSRE),
-  ("L('A') | L('B')", L('A') | L('B'), WSRE),
-  ("EXCEPT(L('A'), L('B'))", EXCEPT(L('A'), L('B')), WSRE),
-  # GRAMMAR with a single element just returns that element, so the following
-  # should resolve to LITERALs:
-  ("GRAMMAR('A')", GRAMMAR('A'), WSRE),
-  ("G('A')", G('A'), WSRE),
-
-  # Override False:
-  ("GRAMMAR('A', whitespace=False)", GRAMMAR('A', whitespace=False), False),
-  ("G('A', whitespace=False)", G('A', whitespace=False), False),
-  ("LITERAL('A', whitespace=False)", LITERAL('A', whitespace=False), False),
-  ("L('A', whitespace=False)", L('A', whitespace=False), False),
-  ("WORD('A', whitespace=False)", WORD('A', whitespace=False), False),
-  ("ANY_EXCEPT('A', whitespace=False)", ANY_EXCEPT('A', whitespace=False), False),
-  ("OR(L('A'), L('B'), whitespace=False)", OR(L('A'), L('B'), whitespace=False), False),
-  ("EXCEPT(L('A'), L('B'), whitespace=False)", EXCEPT(L('A'), L('B'), whitespace=False), False),
-  ("REPEAT(L('A'), whitespace=False)", REPEAT(L('A'), whitespace=False), False),
-  ("OPTIONAL(L('A'), whitespace=False)", OPTIONAL(L('A'), whitespace=False), False),
-  ("ZERO_OR_MORE(L('A'), whitespace=False)", ZERO_OR_MORE(L('A'), whitespace=False), False),
-  ("ONE_OR_MORE(L('A'), whitespace=False)", ONE_OR_MORE(L('A'), whitespace=False), False),
-  ("LIST_OF(L('A'), sep=L('A'), whitespace=False)", LIST_OF(L('A'), sep=L('A'), whitespace=False), False),
-
-  # Override True:
-  ("GRAMMAR('A', whitespace=True)", GRAMMAR('A', whitespace=True), True),
-  ("G('A', whitespace=True)", G('A', whitespace=True), True),
-  ("LITERAL('A', whitespace=True)", LITERAL('A', whitespace=True), True),
-  ("L('A', whitespace=True)", L('A', whitespace=True), True),
-  ("WORD('A', whitespace=True)", WORD('A', whitespace=True), True),
-  ("ANY_EXCEPT('A', whitespace=True)", ANY_EXCEPT('A', whitespace=True), True),
-  ("OR(L('A'), L('B'), whitespace=True)", OR(L('A'), L('B'), whitespace=True), True),
-  ("EXCEPT(L('A'), L('B'), whitespace=True)", EXCEPT(L('A'), L('B'), whitespace=True), True),
-  ("REPEAT(L('A'), whitespace=True)", REPEAT(L('A'), whitespace=True), True),
-  ("OPTIONAL(L('A'), whitespace=True)", OPTIONAL(L('A'), whitespace=True), True),
-  ("ZERO_OR_MORE(L('A'), whitespace=True)", ZERO_OR_MORE(L('A'), whitespace=True), True),
-  ("ONE_OR_MORE(L('A'), whitespace=True)", ONE_OR_MORE(L('A'), whitespace=True), True),
-  ("LIST_OF(L('A'), sep=L('A'), whitespace=True)", LIST_OF(L('A'), sep=L('A'), whitespace=True), True),
+  # Override WS_CUSTOM:
+  ("GRAMMAR('A', whitespace=WS_CUSTOM)", GRAMMAR('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("G('A', whitespace=WS_CUSTOM)", G('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("LITERAL('A', whitespace=WS_CUSTOM)", LITERAL('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("L('A', whitespace=WS_CUSTOM)", L('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("WORD('A', whitespace=WS_CUSTOM)", WORD('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("ANY_EXCEPT('A', whitespace=WS_CUSTOM)", ANY_EXCEPT('A', whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("OR(L('A'), L('B'), whitespace=WS_CUSTOM)", OR(L('A'), L('B'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("EXCEPT(L('A'), L('B'), whitespace=WS_CUSTOM)", EXCEPT(L('A'), L('B'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("REPEAT(L('A'), whitespace=WS_CUSTOM)", REPEAT(L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("OPTIONAL(L('A'), whitespace=WS_CUSTOM)", OPTIONAL(L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("ZERO_OR_MORE(L('A'), whitespace=WS_CUSTOM)", ZERO_OR_MORE(L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("ONE_OR_MORE(L('A'), whitespace=WS_CUSTOM)", ONE_OR_MORE(L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
+  ("LIST_OF(L('A'), sep=L('A'), whitespace=WS_CUSTOM)", LIST_OF(L('A'), sep=L('A'), whitespace=WS_CUSTOM), WS_CUSTOM),
 )
 
 class WhitespaceModeTestCase (util.TestCase):
   def __init__(self, module_setting, name, grammar, expected, modset_str=None):
     util.TestCase.__init__(self, 'perform_test')
     if module_setting is None:
-      self.module_setting = True
+      self.module_setting = WS_DEFAULT
       self.module_setting_str = '(unset)'
     else:
       self.module_setting = module_setting
-      self.module_setting_str = repr(module_setting)
+      self.module_setting_str = self.wsre_name(module_setting)
     if modset_str is not None:
       self.module_setting_str = modset_str
     self.name = name
     self.grammar = grammar
     self.expected = expected
+
+  def wsre_name(self, ws_setting):
+    mapdict = {WS_DEFAULT: 'WS_DEFAULT', WS_NOEOL: 'WS_NOEOL', WS_CUSTOM: 'WS_CUSTOM'}
+    return mapdict.get(ws_setting, repr(ws_setting))
 
   def __str__(self):
     return "grammar_whitespace={}: {}".format(self.module_setting_str, self.name)
@@ -318,10 +255,10 @@ class WhitespaceModeTestCase (util.TestCase):
   def check_recursive(self, name, g, expected, expected_sub):
     if g.grammar_whitespace_mode != 'explicit':
       if g.grammar_whitespace != expected:
-        raise self.failureException("When testing {}: grammar_whitespace for {!r} is {!r}".format(name, g, g.grammar_whitespace))
+        raise self.failureException("When testing {}: grammar_whitespace for {!r} is {}".format(name, g, self.wsre_name(g.grammar_whitespace)))
     if issubclass(g, ListRepetition):
       if g.grammar[1].grammar_whitespace != expected:
-        raise self.failureException("When testing {}: grammar_whitespace for {!r} is {!r}".format(name, g.grammar[1], g.grammar[1].grammar_whitespace))
+        raise self.failureException("When testing {}: grammar_whitespace for {!r} is {}".format(name, g.grammar[1], self.wsre_name(g.grammar[1].grammar_whitespace)))
       sub_list = [g.grammar[0], g.sep]
     else:
       sub_list = g.grammar
@@ -335,12 +272,10 @@ class WhitespaceModeTestCase (util.TestCase):
 def load_tests(loader, tests, pattern):
   for name, g, expected in default_grammars:
     tests.addTest(WhitespaceModeTestCase(None, name, g, expected))
-  for name, g, expected in modfalse_grammars:
-    tests.addTest(WhitespaceModeTestCase(False, name, g, expected))
-  for name, g, expected in modtrue_grammars:
-    tests.addTest(WhitespaceModeTestCase(True, name, g, expected))
-  for name, g, expected in modwsre_grammars:
-    tests.addTest(WhitespaceModeTestCase(WSRE, name, g, expected, 'WSRE'))
+  for name, g, expected in moddef_grammars:
+    tests.addTest(WhitespaceModeTestCase(WS_DEFAULT, name, g, expected))
+  for name, g, expected in modcust_grammars:
+    tests.addTest(WhitespaceModeTestCase(WS_CUSTOM, name, g, expected, 'WS_CUSTOM'))
   return tests
 
 ###############################################################################
@@ -348,18 +283,18 @@ def load_tests(loader, tests, pattern):
 # grammar_whitespace
 ###############################################################################
 
-grammar_whitespace = True
+grammar_whitespace = WS_DEFAULT
 
 class WSNormGrammar (Grammar):
   grammar = (ONE_OR_MORE('A'), 'B', 'C')
 
-grammar_whitespace = WSRE
+grammar_whitespace = WS_CUSTOM
 
-class WSREGrammar (Grammar):
+class WSCUSTGrammar (Grammar):
   grammar = (ONE_OR_MORE('A'), 'B', 'C')
 
 class WSMixGrammar (Grammar):
-  grammar = (ONE_OR_MORE('A', whitespace=True), 'B', 'C')
+  grammar = (ONE_OR_MORE('A', whitespace=WS_DEFAULT), 'B', 'C')
 
 class TestWSNorm (util.BasicGrammarTestCase):
   def setUp(self):
@@ -372,11 +307,11 @@ class TestWSNorm (util.BasicGrammarTestCase):
     self.matches = ('ABC', 'AABC', 'A A B C')
     self.fail_matches = ('A-BC', 'A-ABC', 'AB-C')
 
-class TestWSRE (util.BasicGrammarTestCase):
+class TestWSCUST (util.BasicGrammarTestCase):
   ws_strs = ('-',)
   def setUp(self):
-    self.grammar = WSREGrammar
-    self.grammar_name = "WSREGrammar"
+    self.grammar = WSCUSTGrammar
+    self.grammar_name = "WSCUSTGrammar"
     self.grammar_details = "(REPEAT(L('A')), L('B'), L('C'))"
     self.subgrammar_types = (Repetition, Literal, Literal)
     self.terminal = False

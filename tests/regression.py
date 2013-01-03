@@ -35,7 +35,7 @@ class TestIssue4 (util.TestCase):
   """
 
   def test_whitespace_before_eof(self):
-    grammar = GRAMMAR('A', whitespace=True)
+    grammar = GRAMMAR('A', whitespace_mode='optional')
     list(grammar.parser().parse_lines(["A "], eof=True))
 
 class TestIssue10 (util.TestCase):

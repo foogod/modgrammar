@@ -25,9 +25,13 @@ __all__ = [
     "ZERO_OR_MORE", "ONE_OR_MORE", "ANY_EXCEPT", "BOL", "EOL", "EOF",
     "REST_OF_LINE", "WHITESPACE", "SPACE",
     "generate_ebnf",
+    "WS_DEFAULT", "WS_NOEOL",
 ]
 
-grammar_whitespace = True
+WS_DEFAULT = re.compile(r'\s+')
+WS_NOEOL = re.compile(r'[^\S\r\n]+')
+
+grammar_whitespace = WS_DEFAULT
 grammar_whitespace_mode = 'optional'
 
 class _Singleton:
@@ -171,14 +175,18 @@ class GrammarClass (type):
       # gracefully...
       tags = (tags,)
     cls.grammar_tags = tags
+    mod = sys.modules[cls.__module__]
     if "grammar_whitespace" not in classdict and cls.grammar_whitespace is None:
-      whitespace = sys.modules[cls.__module__].__dict__.get("grammar_whitespace", grammar_whitespace)
+      whitespace = getattr(mod, "grammar_whitespace", grammar_whitespace)
       cls.grammar_whitespace = whitespace
+    if cls.grammar_whitespace is False:
+      util.depwarning("grammar_whitespace=False is deprecated.  Use grammar_whitespace_mode='explicit' instead.", module=mod)
+    elif cls.grammar_whitespace is True:
+      util.depwarning("grammar_whitespace=True is deprecated.  Use grammar_whitespace_mode='optional' instead.", module=mod)
     if "grammar_whitespace_mode" not in classdict and cls.grammar_whitespace_mode is None:
-      mod = sys.modules[cls.__module__]
-      if not hasattr(mod, "grammar_whitespace_mode"):
+      if not hasattr(mod, "grammar_whitespace") and not hasattr(mod, "grammar_whitespace_mode"):
         util.depwarning("default whitespace mode will be changing.  For future compatibility, set grammar_whitespace_mode='optional' explicitly.", module=mod)
-      whitespace_mode = sys.modules[cls.__module__].__dict__.get("grammar_whitespace_mode", grammar_whitespace_mode)
+      whitespace_mode = getattr(mod, "grammar_whitespace_mode", grammar_whitespace_mode)
       cls.grammar_whitespace_mode = whitespace_mode
     cls.__class_init__(classdict)
 
@@ -1055,7 +1063,7 @@ class Terminal (Grammar):
 
 class Literal (Terminal):
   grammar_whitespace_mode = 'explicit'
-  grammar_whitespace = False
+  grammar_whitespace = None
   grammar = ()
   string = ""
   grammar_collapse_skip = True
@@ -1112,7 +1120,7 @@ def LITERAL(string, **kwargs):
 
 class ANY (Terminal):
   grammar_whitespace_mode = 'explicit'
-  grammar_whitespace = False
+  grammar_whitespace = None
   grammar = ()
   grammar_name = "ANY"
   grammar_desc = "any character"
@@ -1129,7 +1137,7 @@ class ANY (Terminal):
 
 class EMPTY (Terminal):
   grammar_whitespace_mode = 'explicit'
-  grammar_whitespace = False
+  grammar_whitespace = None
   grammar = ()
   grammar_collapse = True
   grammar_collapse_skip = True
@@ -1166,7 +1174,6 @@ def OR(*grammars, **kwargs):
 
 class OR_Operator (Grammar):
   grammar_whitespace_mode = 'explicit'
-  grammar_whitespace = False
 
   @classmethod
   def __class_init__(cls, attrs):
@@ -1226,7 +1233,6 @@ def NOT_FOLLOWED_BY(*grammar, **kwargs):
 
 class NotFollowedBy (Grammar):
   grammar_whitespace_mode = 'explicit'
-  grammar_whitespace = False
   grammar_collapse = True
 
   @classmethod
@@ -1293,7 +1299,6 @@ def EXCEPT(grammar, exc_grammar, **kwargs):
 
 class ExceptionGrammar (Grammar):
   grammar_whitespace_mode = 'explicit'
-  grammar_whitespace = False
 
   @classmethod
   def __class_init__(cls, attrs):
@@ -1453,7 +1458,6 @@ def WORD(startchars, restchars=None, longest=False, **kwargs):
 
 class Word (Terminal):
   grammar_whitespace_mode = 'explicit'
-  grammar_whitespace = False
   grammar = ()
   startchars = ""
   restchars = None
@@ -1567,7 +1571,6 @@ class Reference (Grammar):
   ref_base = None
   ref_default = None
   grammar_whitespace_mode = 'explicit'
-  grammar_whitespace = False
 
   @classmethod
   def __class_init__(cls, attrs):
@@ -1719,7 +1722,7 @@ def ANY_EXCEPT(charlist, **kwargs):
 # FIXME: whitespace at beginning of line
 class BOL (Terminal):
   grammar_whitespace_mode = 'explicit'
-  grammar_whitespace = False
+  grammar_whitespace = None
   grammar = ()
   grammar_desc = "beginning of line"
 
@@ -1734,7 +1737,7 @@ class BOL (Terminal):
 
 class EOF (Terminal):
   grammar_whitespace_mode = 'explicit'
-  grammar_whitespace = False
+  grammar_whitespace = None
   grammar = ()
   grammar_desc = "end of file"
 
@@ -1746,7 +1749,7 @@ class EOF (Terminal):
 
 class EOL (Terminal):
   grammar_whitespace_mode = 'explicit'
-  grammar_whitespace = False
+  grammar_whitespace = None
   grammar_desc = "end of line"
   grammar_collapse_skip = True
   grammar = (L("\n\r") | L("\r\n") | L("\r") | L("\n"))
@@ -1775,7 +1778,7 @@ class SPACE (Word):
 
   @classmethod
   def grammar_parse(cls, text, index, sessiondata):
-    util.depwarning("The meaning of SPACE will be changing: For future compatibility, use WHITESPACE instead.", (util.get_calling_stacklevel() or 3)-1)
+    util.depwarning("The meaning of SPACE will be changing: For future compatibility, use WHITESPACE instead.", util.get_calling_stacklevel() or 3)
     s = Word.grammar_parse.__func__(cls, text, index, sessiondata)
     offset, obj = next(s)
     try:

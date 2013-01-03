@@ -89,14 +89,20 @@ def make_classdict(base, grammar, kwargs, **defaults):
       cdict[key] = value
   cdict['grammar'] = grammar
   if not "grammar_whitespace" in cdict and base.grammar_whitespace is None:
-    mdict = get_calling_module().__dict__
-    whitespace = mdict.get("grammar_whitespace", modgrammar.grammar_whitespace)
+    mod = get_calling_module()
+    whitespace = getattr(mod, "grammar_whitespace", modgrammar.grammar_whitespace)
     cdict["grammar_whitespace"] = whitespace
+  if cdict.get("grammar_whitespace", None) is False:
+    mod = get_calling_module()
+    depwarning("grammar_whitespace=False is deprecated.  Use grammar_whitespace_mode='explicit' instead.", get_calling_stacklevel() or 3, mod)
+  elif cdict.get("grammar_whitespace", None) is True:
+    mod = get_calling_module()
+    depwarning("grammar_whitespace=True is deprecated.  Use grammar_whitespace_mode='optional' instead.", get_calling_stacklevel() or 3, mod)
   if not "grammar_whitespace_mode" in cdict and base.grammar_whitespace_mode is None:
     mod = get_calling_module()
-    if not hasattr(mod, "grammar_whitespace_mode"):
+    if not hasattr(mod, "grammar_whitespace") and not hasattr(mod, "grammar_whitespace_mode"):
       depwarning("default whitespace mode will be changing.  For future compatibility, set grammar_whitespace_mode='optional' explicitly.", get_calling_stacklevel() or 3, mod)
-    whitespace_mode = mod.__dict__.get("grammar_whitespace_mode", modgrammar.grammar_whitespace_mode)
+    whitespace_mode = getattr(mod, "grammar_whitespace_mode", modgrammar.grammar_whitespace_mode)
     cdict["grammar_whitespace_mode"] = whitespace_mode
   return cdict
 
@@ -126,7 +132,7 @@ def get_calling_stacklevel(stack=None):
 def get_calling_modinfo(stack=None):
   if stack is None:
     stack = traceback.extract_stack(None)
-  stacklevel = -1
+  stacklevel = -2
   for s in reversed(stack):
     stacklevel += 1
     filename = s[0]
@@ -213,6 +219,8 @@ def get_found_txt(buf, pos):
 depwarnings_issued = set()
 
 def depwarning(msg, stacklevel=2, module=None):
+  if module == modgrammar:
+    return
   winfo = (module, msg)
   if not winfo in depwarnings_issued:
     depwarnings_issued.add(winfo)
