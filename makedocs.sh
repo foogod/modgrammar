@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Gemnerate the current docs, zip them up, and put both the zipped and unzipped
+# Generate the current docs, zip them up, and put both the zipped and unzipped
 # versions in the right locations of the doc repository.
 #
 # After running this, all that should be needed to push the new documentation
