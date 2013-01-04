@@ -422,7 +422,7 @@ In some applications, you may just want to break some text down into its compone
    >>> result.tokens()
    ['Hello', ',', 'my name is', 'Inigo', 'Montoya', ',', 'my name is', 'Fezzik', '!']
 
-The :meth:`~modgrammar.Grammar.terminals` method will return all of the terminal elements (that is, elements that don't have any sub-elements) in the tree.  Typically, this results in all of the individual literal strings, :func:`~modgrammar.WORD`s, etc, without any of the larger tree structures.  Likewise, the :meth:`~modgrammar.Grammar.tokens` method actually just returns all of the actual strings associated with the terminals (thus it returns the original text, broken down into its component parts).
+The :meth:`~modgrammar.Grammar.terminals` method will return all of the terminal elements (that is, elements that don't have any sub-elements) in the tree.  Typically, this results in all of the individual literal strings, :func:`~modgrammar.WORD`\ s, etc, without any of the larger tree structures.  Likewise, the :meth:`~modgrammar.Grammar.tokens` method actually just returns all of the actual strings associated with the terminals (thus it returns the original text, broken down into its component parts).
 
 Finally, if just searching by element type isn't precise enough for you, there's one more way to look up individual elements in a parse tree: tags.
 
@@ -436,16 +436,16 @@ When defining any grammar class, you can associate with it one or more "tags".  
        grammar = (WORD("A-Z", "a-z"))
        grammar_tags = ("name",)
 
-Now if we generate a new result from this grammar, we can actually search for elements with a "name" tag using :meth:`~modgrammar.Grammar.find_tag` and :meth:`~modgrammar.Grammar.find_tag_all`, just the same as we used :meth:`~modgrammar.Grammar.find` and :meth:`~modgrammar.Grammar.find_all` before::
+Now if we generate a new result from this grammar, we can actually search for elements with a "name" tag using :meth:`~modgrammar.Grammar.find` and :meth:`~modgrammar.Grammar.find_all`, just like we looked for particular classes::
 
    >>> myparser = MyGrammar.parser()
    >>> result = myparser.parse_text("Hello, my name is Inigo Montoya, my name is Fezzik!")
-   >>> result.find_tag("name")
+   >>> result.find("name")
    FirstName<'Inigo'>
-   >>> result.find_tag_all("name")
+   >>> result.find_all("name")
    [FirstName<'Inigo'>, LastName<'Montoya'>, FirstName<'Fezzik'>]
 
-(You can even supply a list of tags to traverse, the same as we did with a list of types for the :meth:`~modgrammar.Grammar.find` methods.)
+(You can even supply a list of tags to traverse, the same as we did with a list of types for the :meth:`~modgrammar.Grammar.find` methods, or even intermingle tags and types.)
 
 Results May Vary: Customizing Result Objects
 --------------------------------------------
@@ -528,7 +528,7 @@ Now any MyNameIs result object which is created will have the "has_lastname" tag
    >>> result = myparser.parse_text("Hello, my name is Inigo Montoya, my name is Fezzik!")
    >>> result.find_all(MyNameIs)
    [MyNameIs<'my name is', 'Inigo', 'Montoya'>, MyNameIs<'my name is', 'Fezzik', None>]
-   >>> result.find_tag_all("has_lastname")
+   >>> result.find_all("has_lastname")
    [MyNameIs<'my name is', 'Inigo', 'Montoya'>]
 
 Custom Methods and Behaviors
