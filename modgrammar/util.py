@@ -7,8 +7,6 @@ import modgrammar
 
 PARSEERROR_FOUNDTXT_LEN = 16
 
-_whitespace_re = re.compile('\s+')
-
 def update_best_error(current_best, err):
   if not current_best:
     return err

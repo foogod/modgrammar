@@ -365,13 +365,13 @@ class GrammarParser:
           # string, so ignore the error.
           return (None, None)
         errpos, expected = obj
-        if errpos == len(self.text.string) and self.grammar.grammar_whitespace:
+        if errpos == len(self.text.string) and self.grammar.grammar_whitespace_mode != 'explicit':
 	  # If we hit EOF and this grammar is whitespace-consuming, check to
 	  # see whether we had only whitespace before the EOF.  If so, treat
 	  # this like the pos == len(self.text.string) case above.
           whitespace_re = self.grammar.grammar_whitespace
           if whitespace_re is True:
-            whitespace_re = util._whitespace_re
+            whitespace_re = WS_DEFAULT
           m = whitespace_re.match(self.text.string, pos)
           if m and m.end() == len(self.text.string):
             return (None, None)
@@ -605,7 +605,7 @@ class Grammar (metaclass=GrammarClass):
       whitespace_re = False
       whitespace_reqd = False
     if whitespace_re is True:
-      whitespace_re = util._whitespace_re
+      whitespace_re = WS_DEFAULT
     objs = []
     states = []
     positions = []
