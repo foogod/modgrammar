@@ -12,10 +12,16 @@ The first thing we need to do before we can do any text parsing is to define the
 
    from modgrammar import *
 
+   grammar_whitespace_mode = 'optional'
+
    class MyGrammar (Grammar):
        grammar = (LITERAL("Hello,"), LITERAL("world!"))
 
-Some things to note here:  First, the :attr:`~modgrammar.Grammar.grammar` attribute will always contain a list of other grammars.  In this case, we've used two :func:`~modgrammar.LITERAL` grammars to make up our new grammar.  :func:`~modgrammar.LITERAL` is a built-in function provided by the :mod:`modgrammar` module which returns a grammar which will match a specific literal string (in this case, the first one will (only) match the string "Hello,", and the second one will match "world!").  Because our grammar is composed of these two sub-grammars, our grammar will only match a string if it matches both of them, in sequence, so our grammar will only match a piece of text if it contains "Hello, world!".
+Some things to note here:  First, we started out by importing everything from the modgrammar module with ``from modgrammar import *``.  This is generally the way you'll want to start any module that uses Modgrammar, as there are a LOT of different identifiers that will come into play for any reasonably complex grammar definition, and having to prefix all of them with ``modgrammar.`` will get pretty tiresome pretty fast, so doing things this way just makes everything a lot easier.
+
+Second is the setting ``grammar_whitespace_mode = 'optional'``.  This tells modgrammar how we want all our grammar definitions to treat whitespace in the input text.  For now, you can just ignore this, and we'll go into it in more detail in the section on :ref:`whitespace-handling` below.  What you'll want to note at this point, though, is that it's always a good idea to specify your desired whitespace mode explicitly at the beginning of your module, no matter what you choose to set it to.
+
+Finally, there's the :class:`MyGrammar` class, with its :attr:`~modgrammar.Grammar.grammar` attribute, which will always contain a list of other grammars.  In this case, we've used two :func:`~modgrammar.LITERAL` grammars to make up our new grammar.  :func:`~modgrammar.LITERAL` is a built-in function provided by the :mod:`modgrammar` module which returns a grammar which will match a specific literal string (in this case, the first one will (only) match the string "Hello,", and the second one will match "world!").  Because our grammar is composed of these two sub-grammars, our grammar will only match a string if it matches both of them, in sequence, so our grammar will only match a piece of text if it contains "Hello, world!".
 
 As a side-note, here, instead of ``LITERAL("Hello,")``, we could also have used its shorter alias, ``L("Hello,")``.  Actually, in most cases where grammars are required, if you just provide a string value, :mod:`modgrammar` will automatically convert it into a :func:`~modgrammar.LITERAL` grammar for you, so we really could have just used plain strings in our grammar definition, with the same results::
 
@@ -315,6 +321,8 @@ There are a couple of different techniques for dealing with left-recursion in th
 
 Customizing General Behaviors
 -----------------------------
+
+.. _whitespace-handling:
 
 Whitespace Handling
 ^^^^^^^^^^^^^^^^^^^

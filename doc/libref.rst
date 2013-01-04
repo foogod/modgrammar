@@ -53,6 +53,17 @@ Class Attributes
 
       In the case where you want a grammar to be "whitespace consuming" but want something other than the normal definition of "whitespace", you can also set :attr:`~Grammar.grammar_whitespace` to a custom regular expression object to be used instead.  This regular expression should attempt to match as much whitespace as possible, starting at the specified position in the string (the actual match result is not used, except that its length is used to determine how far to skip ahead in the string).
 
+      Modgrammar comes with two standard whitespace regexps which can be used out-of-the-box for :attr:`~Grammar.grammar_whitespace`:
+
+      .. table::
+
+         ========== ============= ========================================
+         Name       Regexp        Meaning
+         ========== ============= ========================================
+         WS_DEFAULT \\s+          Any whitespace character (default)
+         WS_NOEOL   [^\\S\\r\\n]+ Any whitespace character except CR or NL
+         ========== ============= ========================================
+
       Like :attr:`~Grammar.grammar_whitespace_mode`, ``grammar_whitespace`` can also be set as a module-level variable, in which case it will be used as the default for all grammar classes in that module.
 
    There are also a few less-commonly-used class attributes which may be useful when inspecting grammars, or may be overridden in special cases:
