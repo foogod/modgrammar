@@ -1571,6 +1571,7 @@ class Reference (Grammar):
   ref_base = None
   ref_default = None
   grammar_whitespace_mode = 'explicit'
+  grammar = ()
 
   @classmethod
   def __class_init__(cls, attrs):

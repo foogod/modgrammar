@@ -754,3 +754,29 @@ class TestNotFollowedBy3 (util.BasicGrammarTestCase):
   def num_tokens_for(self, teststr):
     return (2, 2)
 
+class TestREF (util.BasicGrammarTestCase):
+  def setUp(self):
+    self.grammar = REF('G1')
+    self.grammar_name = "REF('G1')"
+    self.grammar_details = "REF('G1')"
+    self.terminal = False
+    self.subgrammar_types = (Literal,)
+    self.expected_match_types = (G1,)
+    self.check_min_max = False
+    self.matches = ('ABC',)
+    self.matches_with_remainder = ('ABCD',)
+    self.fail_matches = ('ABX', 'BC', 'abc', 'AB C')
+    self.partials = (('A', 'B', 'C'), ('AB', 'C'), ('A', 'BC'), ('AB','CD'))
+    self.fail_partials = (('A', 'B', 'X'), ('A', 'BX'))
+
+  def test_sanity(self):
+    # Most of the sanity tests don't actually make sense for REF()
+    pass
+
+  def test_pre_post_space(self):
+    # The whitespace mode of REF is irrelevant, because it is resolved to its
+    # target before any actual parsing is done, so it's the target's whitespace
+    # mode that matters.  Just skip these tests as they don't actually make
+    # sense.
+    pass
+
