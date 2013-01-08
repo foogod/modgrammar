@@ -1324,17 +1324,19 @@ class ExceptionGrammar (Grammar):
       # We found one, but now we need to check to make sure that the
       # exception-grammar does NOT match the same part of the text string.
       exc_text = Text(text.string[:index+count], bol=text.bol, eof=True)
-      found = False
       for e_count, e_obj in exc.grammar_parse(exc_text, index, sessiondata):
-        if e_count is None:
+        if e_count == count:
+	  # Oops, we matched on the exception grammar (and it's a complete
+	  # match), don't return this one as a success.
+          break
+        elif e_count is False:
+	  # We've gone through all the possible exception grammar matches (if
+	  # any) and none of them were a fit.  Success!
+          yield (count, obj)
+          break
+        elif e_count is None:
           # Subgrammars should not be asking for more data after eof.
           raise InternalError("{} requested more data when at EOF".format(g))
-        if e_count != count:
-          break
-        found = True
-        break
-      if not found:
-        yield (count, obj)
     # In some cases, our "best error" can lead to really confusing messages,
     # since it may say "expected foo" at a place where foo actually WAS found
     # (because the exclusion grammar prevented it from being returned).  If

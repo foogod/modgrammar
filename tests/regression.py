@@ -38,6 +38,17 @@ class TestIssue4 (util.TestCase):
     grammar = GRAMMAR('A', whitespace_mode='optional')
     list(grammar.parser().parse_lines(["A "], eof=True))
 
+class TestIssue8 (util.TestCase):
+  """
+  Issue 8: Grammars with NOT_FOLLOWED_BY don't correctly return a parse error
+           before terminating the generator
+  """
+
+  def test_iteration_not_followed_by(self):
+    grammar = G('A', NOT_FOLLOWED_BY('A'))
+    o = grammar.parser().parse_text('AB', matchtype='all')
+    self.assertEqual([x.string for x in o], ['A'])
+
 class TestIssue10 (util.TestCase):
   """
   Issue 10: EXCEPT incorrectly matches on prefixes of the result
@@ -50,13 +61,23 @@ class TestIssue10 (util.TestCase):
     except ParseError:
       self.fail("EXCEPT incorrectly matching on substring")
 
-class TestIssue8 (util.TestCase):
+class TestIssue23 (util.TestCase):
   """
-  Issue 8: Grammars with NOT_FOLLOWED_BY don't correctly return a parse error
-           before terminating the generator
+  Issue 23: EXCEPT stops after first successful match, even if it doesn't meet
+            other criteria
   """
 
-  def test_iteration_not_followed_by(self):
-    grammar = G('A', NOT_FOLLOWED_BY('A'))
-    o = grammar.parser().parse_text('AB', matchtype='all')
-    self.assertEqual([x.string for x in o], ['A'])
+  def test_except_multimatch(self):
+    grammar = EXCEPT(WORD('a-z', longest=True), L('foo') | L('foobar'))
+    with self.assertRaises(modgrammar.ParseError):
+      # What should happen here:
+      #   1. Successful match on the primary grammar (WORD)
+      #   2. Try to match the first exception grammar (L('foo')) (success)
+      #   3. EXCEPT notices that the exception grammar is only a prefix so
+      #      discards it (see Issue 10)
+      #   4. Try to match the second exception grammar (L('foobar')) (success)
+      #   5. Exception match is fully valid, so the EXCEPT clause fails.
+      # In the buggy case, steps 4-5 do not actually get run and the EXCEPT
+      # clause incorrectly returns success.
+      o = grammar.parser().parse_text('foobar', eof=True)
+
