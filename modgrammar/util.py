@@ -77,6 +77,10 @@ classdict_map = dict(
     greedy='grammar_greedy',
     whitespace='grammar_whitespace',
     whitespace_mode='grammar_whitespace_mode',
+    name='grammar_name',
+    desc='grammar_desc',
+    terminal='grammar_terminal',
+    error_override='grammar_error_override',
 )
 
 def make_classdict(base, grammar, kwargs, **defaults):
