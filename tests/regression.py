@@ -81,3 +81,18 @@ class TestIssue23 (util.TestCase):
       # clause incorrectly returns success.
       o = grammar.parser().parse_text('foobar', eof=True)
 
+class TestIssue24 (util.TestCase):
+  """
+  Issue 24: hash() breaks on recursive grammars after grammar_resolve_refs
+  """
+
+  def test_hash_recursive(self):
+    class G (Grammar):
+      grammar = (REF('G'))
+    G.grammar_resolve_refs({'G': G})
+    try:
+      hash(G)
+    except RuntimeError:
+      # We do things this way to hide the horribly spammy "max recursion"
+      # traceback.
+      self.fail()

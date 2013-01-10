@@ -808,9 +808,9 @@ class Grammar (metaclass=GrammarClass):
     if not skip:
       skip = set()
     else:
-      # We maintain 'skip' as a set of ids, because keeping the objects
-      # themselves will call __hash__ on them, which makes the 'grammar'
-      # attribute immutable, which means we can't do what we need to do.
+      # We maintain 'skip' as a set of ids, because it's quicker and
+      # technically more correct than keeping the objects themselves (which
+      # will compare based on hash)
       skip = set(x if isinstance(x, int) else id(x) for x in skip)
     if id(cls) in skip:
       return
@@ -827,10 +827,18 @@ class Grammar (metaclass=GrammarClass):
         if not follow:
           rec = False
           break
+      # We have to calculate the hash value now before we potentially create a
+      # cyclic grammar tree, as trying to calculate it afterward would result
+      # in an infinite loop.
+      hash(g)
       grammar.append(g)
       if rec and hasattr(g, "grammar_resolve_refs"):
         g.grammar_resolve_refs(refmap, recurse, follow, missing_ok, skip)
-    cls.grammar = tuple(grammar)
+    # We have to bypass the normal __setattr__ here because we're technically
+    # changing a hash-related attr after our hash may already have been
+    # calculated.  In this case, it's ok, because the two grammars are
+    # effectively the same anyway.
+    type.__setattr__(cls, 'grammar', tuple(grammar))
 
   def __init__(self, string, start=0, end=None, parsed=()):
     self._str_info = (string, start, end)
@@ -1415,7 +1423,7 @@ class Repetition (Grammar):
     # RepeatingTuple after it's done.
     old_grammar = cls.grammar
     Grammar.grammar_resolve_refs.__func__(cls, refmap, recurse, follow, missing_ok, skip)
-    cls.grammar = util.RepeatingTuple(*cls.grammar, len=old_grammar.len)
+    type.__setattr__(cls, 'grammar', util.RepeatingTuple(*cls.grammar, len=old_grammar.len))
 
   #TODO: implement strict vs non-strict EBNF
   @classmethod
