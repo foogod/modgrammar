@@ -61,6 +61,17 @@ class TestIssue10 (util.TestCase):
     except ParseError:
       self.fail("EXCEPT incorrectly matching on substring")
 
+class TestIssue20 (util.TestCase):
+  """
+  Issue 20: Repetitions incorrectly allowing null subtokens
+  """
+
+  def test_repeat_empty_match(self):
+    grammar = REPEAT(EMPTY, min=0, max=1)
+    o = grammar.parser().parse_text('foobar')
+    if o.elements:
+      self.fail("REPEAT allowed null subtoken")
+
 class TestIssue23 (util.TestCase):
   """
   Issue 23: EXCEPT stops after first successful match, even if it doesn't meet

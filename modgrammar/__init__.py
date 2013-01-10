@@ -647,13 +647,16 @@ class Grammar (metaclass=GrammarClass):
         if first_pos is None:
           first_pos = pos
         s = grammar[len(objs)].grammar_parse(text, pos, sessiondata)
-        offset, obj = next(s)
-        while offset is None:
-          if text.eof:
-            # Subgrammars should not be asking for more data after eof.
-            raise InternalError("{} requested more data when at EOF".format(grammar[len(objs)]))
-          text = yield (None, None)
-          offset, obj = s.send(text)
+        while True:
+          offset, obj = next(s)
+          while offset is None:
+            if text.eof:
+              # Subgrammars should not be asking for more data after eof.
+              raise InternalError("{} requested more data when at EOF".format(grammar[len(objs)]))
+            text = yield (None, None)
+            offset, obj = s.send(text)
+          if cls.grammar_null_subtoken_ok or offset is not 0:
+            break
         if offset is False:
           best_error = util.update_best_error(best_error, obj)
           pos = prews_pos
