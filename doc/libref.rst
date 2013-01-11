@@ -18,7 +18,7 @@ Class Attributes
 
    .. attribute:: Grammar.grammar_tags
 
-      A list of "tags" to be associated with match result objects produced by this grammar.  These tags can be used with the :meth:`find_tag` and :meth:`find_tag_all` methods to extract specific elements from a parse tree after a successful match.
+      A list of "tags" to be associated with match result objects produced by this grammar.  These tags can be used with the :meth:`find` and :meth:`find_all` methods to extract specific elements from a parse tree after a successful match.
 
    .. attribute:: Grammar.grammar_collapse
 
