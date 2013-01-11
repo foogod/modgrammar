@@ -531,6 +531,17 @@ class TestWord3 (util.BasicGrammarTestCase):
     with self.assertRaises(ParseError):
       p.parse_text('abcdab') # Would be OK except for longest=True
 
+class TestWord4 (util.BasicGrammarTestCase):
+  def setUp(self):
+    self.grammar = WORD('^', min=2, max=5, longest=True)
+    self.grammar_name = "WORD('^')"
+    self.grammar_details = "WORD('^', min=2, max=5, longest=True)"
+    self.matches = ('^^^^^',)
+    self.matches_with_remainder = ('^^^^^^', '^^#^^')
+    self.fail_matches = ('A^^^', '\n^^^^^', '^ ^^^')
+    self.partials = (('^', '^', '^', '^', '^'), ('^', '^', '#'))
+    self.fail_partials = (('^', '#'),)
+
 class TestAnyExcept (util.BasicGrammarTestCase):
   def setUp(self):
     self.grammar = ANY_EXCEPT('a-z')

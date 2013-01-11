@@ -1490,19 +1490,27 @@ class Word (Terminal):
       restchars = startchars
     startchars = re.sub('([\\]\\\\])', '\\\\\\1', startchars)
     restchars = re.sub('([\\]\\\\])', '\\\\\\1', restchars)
+    if startchars == '^':
+      startchars = '\\^'
+    else:
+      startchars = "[{}]".format(startchars)
+    if restchars == '^':
+      restchars = '\\^'
+    else:
+      restchars = "[{}]".format(restchars)
     max = cls.grammar_max
     if not max:
-      regexp = "[{}][{}]*".format(startchars, restchars)
+      regexp = "{}{}*".format(startchars, restchars)
     else:
-      regexp = "[{}][{}]{{,{}}}".format(startchars, restchars, max-1)
+      regexp = "{}{}{{,{}}}".format(startchars, restchars, max-1)
     if cls.grammar_min < 1:
       regexp = "({})?".format(regexp)
     cls.regexp = re.compile(regexp)
     if "grammar_name" not in attrs:
       if cls.restchars is None:
-        argspec = repr(startchars)
+        argspec = repr(cls.startchars)
       else:
-        argspec = "{!r}, {!r}".format(startchars, restchars)
+        argspec = "{!r}, {!r}".format(cls.startchars, cls.restchars)
       cls.grammar_name = "WORD({})".format(argspec)
     if "grammar_desc" not in attrs:
       cls.grammar_desc = cls.grammar_name
