@@ -1,3 +1,13 @@
+Version 0.9.1: 2013-01-11 Alex Stewart <alex@foogod.com>
+  * Issue 20: Repetitions incorrectly allowing null subtokens
+  * Issue 22: REFs don't have standard attributes (like grammar_name)
+  * Issue 23: EXCEPT stops after first successful match, even if it doesn't
+    meet other criteria
+  * Issue 24: hash() breaks on recursive grammars after grammar_resolve_refs
+  * Issue 25: WORD("^") does not work as expected
+  * Fix a leftover reference in the docs to find_tag* methods
+  * Add a few missing attributes to classdict_map
+
 Version 0.9: 2013-01-03 Alex Stewart <alex@foogod.com>
   * Clean up some warning messages from MANIFEST.in rules
   * Made ParseError "found text" chooser stop at end-of-line
