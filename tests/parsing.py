@@ -1,3 +1,5 @@
+# vi:et:ts=2:sw=2
+
 from modgrammar import *
 from . import util
 
@@ -11,7 +13,7 @@ class TestParseOpts (util.TestCase):
   def test_matchtype_or(self):
     grammar = OR('aa', 'aaaa', 'a', 'aaa')
     o = grammar.parser().parse_text('aaaa')
-    self.assertEqual(o.string, 'aa') # Default should be 'first'
+    self.assertEqual(o.string, 'aa')  # Default should be 'first'
     o = grammar.parser().parse_text('aaaa', matchtype='first')
     self.assertEqual(o.string, 'aa')
     o = grammar.parser().parse_text('aaaa', matchtype='last')
@@ -26,7 +28,7 @@ class TestParseOpts (util.TestCase):
   def test_matchtype_rep_greedy(self):
     grammar = REPEAT('a', min=1, max=4)
     o = grammar.parser().parse_text('aaaa')
-    self.assertEqual(o.string, 'aaaa') # Default should be 'first'
+    self.assertEqual(o.string, 'aaaa')  # Default should be 'first'
     o = grammar.parser().parse_text('aaaa', matchtype='first')
     self.assertEqual(o.string, 'aaaa')
     o = grammar.parser().parse_text('aaaa', matchtype='last')
@@ -41,7 +43,7 @@ class TestParseOpts (util.TestCase):
   def test_matchtype_rep_nongreedy(self):
     grammar = REPEAT('a', min=1, max=4, greedy=False)
     o = grammar.parser().parse_text('aaaa')
-    self.assertEqual(o.string, 'a') # Default should be 'first'
+    self.assertEqual(o.string, 'a')  # Default should be 'first'
     o = grammar.parser().parse_text('aaaa', matchtype='first')
     self.assertEqual(o.string, 'a')
     o = grammar.parser().parse_text('aaaa', matchtype='last')

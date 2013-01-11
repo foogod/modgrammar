@@ -1,3 +1,5 @@
+# vi:et:ts=2:sw=2
+
 import re
 from modgrammar import Terminal, GrammarClass, OPTIONAL, WORD
 from . import util
@@ -89,4 +91,3 @@ class Integer (Terminal):
 
 class PositiveInteger (Integer):
   grammar = (WORD('0-9'))
-

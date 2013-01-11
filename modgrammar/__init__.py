@@ -1,3 +1,5 @@
+# vi:et:ts=2:sw=2
+
 import sys
 import re
 import textwrap
@@ -41,7 +43,7 @@ class _Singleton:
   def __repr__(self):
     return self.name
 
-DEFAULT = _Singleton("DEFAULT") # singleton used for detecting default arguments
+DEFAULT = _Singleton("DEFAULT")  # singleton used for detecting default args
 
 def _gclass_reconstructor(name, bases, cdict):
   return GrammarClass(name, bases, cdict)
@@ -366,9 +368,9 @@ class GrammarParser:
           return (None, None)
         errpos, expected = obj
         if errpos == len(self.text.string) and self.grammar.grammar_whitespace_mode != 'explicit':
-	  # If we hit EOF and this grammar is whitespace-consuming, check to
-	  # see whether we had only whitespace before the EOF.  If so, treat
-	  # this like the pos == len(self.text.string) case above.
+          # If we hit EOF and this grammar is whitespace-consuming, check to
+          # see whether we had only whitespace before the EOF.  If so, treat
+          # this like the pos == len(self.text.string) case above.
           whitespace_re = self.grammar.grammar_whitespace
           if whitespace_re is True:
             whitespace_re = WS_DEFAULT
@@ -430,14 +432,14 @@ class GrammarParser:
         self.skip(count)
       yield obj
       if not count:
-	# We matched a zero-length string.  If we keep looping, we'll just loop
-	# infinitely doing the same thing.  Best to stop now.
+        # We matched a zero-length string.  If we keep looping, we'll just loop
+        # infinitely doing the same thing.  Best to stop now.
         break
       if not self.text.eof and pos == len(self.text.string):
         # We've done all we can for now.
-	# Note: if we're at EOF, we loop one more time in case something wants
-	# to match the EOF, and then we'll break on either the error-on-EOF
-	# case or the count-is-zero case next time through.
+        # Note: if we're at EOF, we loop one more time in case something wants
+        # to match the EOF, and then we'll break on either the error-on-EOF
+        # case or the count-is-zero case next time through.
         break
 
   def parse_text(self, string, bol=None, eof=None, reset=False, multi=False, data=None, matchtype='first'):
@@ -617,13 +619,13 @@ class Grammar (metaclass=GrammarClass):
       # Forward ho!
       while True:
         if not greedy and len(objs) >= grammar_min:
-	  # If we're not "greedy", then try returning every match as soon as we
-	  # get it (which will naturally return the shortest matches first)
+          # If we're not "greedy", then try returning every match as soon as we
+          # get it (which will naturally return the shortest matches first)
           yield (pos - index, cls(text.string, index, pos, objs))
-	  # We need to copy objs for any further stuff, since it's now part of
-	  # the object we yielded above, which our caller may be keeping for
-	  # later, so if we modify it in-place we'll be screwing up the
-	  # 'entities' list of that object in the process.
+          # We need to copy objs for any further stuff, since it's now part of
+          # the object we yielded above, which our caller may be keeping for
+          # later, so if we modify it in-place we'll be screwing up the
+          # 'entities' list of that object in the process.
           objs = list(objs)
         if len(objs) >= grammar_max:
           break
@@ -637,10 +639,10 @@ class Grammar (metaclass=GrammarClass):
               break
             text = yield (None, None)
           if whitespace_reqd and objs and pos == prews_pos:
-	    # We didn't match any whitespace before the next sub-grammar, but
-	    # whitespace is required between sub-grammars.  Handle this as if
-	    # there were a WHITESPACE grammar in this spot that gave us back an
-	    # error result.
+            # We didn't match any whitespace before the next sub-grammar, but
+            # whitespace is required between sub-grammars.  Handle this as if
+            # there were a WHITESPACE grammar in this spot that gave us back an
+            # error result.
             obj = util.error_result(pos, WHITESPACE)[1]
             best_error = util.update_best_error(best_error, obj)
             break
@@ -668,14 +670,14 @@ class Grammar (metaclass=GrammarClass):
       # find something else to follow...
       while True:
         if greedy and len(objs) >= grammar_min:
-	  # If we are greedy, then return matches only after we've gone as far
-	  # forward as possible, while we're backtracking (returns the longest
-	  # matches first)
+          # If we are greedy, then return matches only after we've gone as far
+          # forward as possible, while we're backtracking (returns the longest
+          # matches first)
           yield (pos - index, cls(text.string, index, pos, objs))
-	  # We need to copy objs for any further stuff, since it's now part of
-	  # the object we yielded above, which our caller may be keeping for
-	  # later, so if we modify it in-place we'll be screwing up the
-	  # 'entities' list of that object in the process.
+          # We need to copy objs for any further stuff, since it's now part of
+          # the object we yielded above, which our caller may be keeping for
+          # later, so if we modify it in-place we'll be screwing up the
+          # 'entities' list of that object in the process.
           objs = list(objs)
         if not states:
           break
@@ -705,8 +707,8 @@ class Grammar (metaclass=GrammarClass):
       # grammar instead.
       yield error_result(index, cls)
     elif ((len(cls.grammar) == 1)
-         and (best_error[0] == first_pos)
-         and (cls.grammar_desc != cls.grammar_name) ):
+          and (best_error[0] == first_pos)
+          and (cls.grammar_desc != cls.grammar_name)):
       # We're just a simple wrapper (i.e. an alias) around another single
       # grammar class, and it failed to match, and we have a custom
       # grammar_desc.  Return ourselves as the failed match grammar so the
@@ -1277,7 +1279,7 @@ class NotFollowedBy (Grammar):
       # If the caller proceeds to the next "match", we need to yield an error
       # to indicate we're done with matching.
       yield error_result(index, cls)
-    
+
   @classmethod
   def grammar_details(cls, depth=-1, visited=None):
     if not visited:
@@ -1337,12 +1339,12 @@ class ExceptionGrammar (Grammar):
       exc_text = Text(text.string[:index+count], bol=text.bol, eof=True)
       for e_count, e_obj in exc.grammar_parse(exc_text, index, sessiondata):
         if e_count == count:
-	  # Oops, we matched on the exception grammar (and it's a complete
-	  # match), don't return this one as a success.
+          # Oops, we matched on the exception grammar (and it's a complete
+          # match), don't return this one as a success.
           break
         elif e_count is False:
-	  # We've gone through all the possible exception grammar matches (if
-	  # any) and none of them were a fit.  Success!
+          # We've gone through all the possible exception grammar matches (if
+          # any) and none of them were a fit.  Success!
           yield (count, obj)
           break
         elif e_count is None:
@@ -1358,7 +1360,7 @@ class ExceptionGrammar (Grammar):
       yield error_result(index, cls)
     else:
       yield error_result(*best_error)
-    
+
   @classmethod
   def grammar_details(cls, depth=-1, visited=None):
     if not depth:
@@ -1389,7 +1391,7 @@ class Repetition (Grammar):
   grammar_max = None
   grammar_whitespace = None
   grammar_whitespace_mode = None
-  
+
   @classmethod
   def __class_init__(cls, attrs):
     if not cls.grammar:
@@ -1575,7 +1577,7 @@ def REF(ref_name, module=DEFAULT, default=None):
   """
   Create a reference to a grammar named *ref_name*, to be resolved later.
 
-  This can either be resolved by calling :meth:`~Grammar.grammar_resolve_refs` prior to parsing, or, alternately, :mod:`modgrammar` will automatically attempt to resolve any :func:`REF` whenever it is used in parsing, and will treat it the same as if it were actually an occurrence of the resolved grammar.  
+  This can either be resolved by calling :meth:`~Grammar.grammar_resolve_refs` prior to parsing, or, alternately, :mod:`modgrammar` will automatically attempt to resolve any :func:`REF` whenever it is used in parsing, and will treat it the same as if it were actually an occurrence of the resolved grammar.
 
   By default, resolving a reference involves searching for a grammar class with the same name in the same python module.  The python module is determined based on the location where the :func:`REF` call occurred.  If you wish to use a different module to look for the grammar this :func:`REF` refers to, it can be provided in the *module* parameter.  If *module* is given as :const:`None`, then no module will be searched.
 
@@ -1597,7 +1599,7 @@ class Reference (Grammar):
   @classmethod
   def __class_init__(cls, attrs):
     cls.grammar_name = "REF({!r})".format(cls.ref_name)
-    
+
   @classmethod
   def resolve(cls, sessiondata={}):
     o = None
@@ -1886,4 +1888,3 @@ def generate_ebnf(grammar, **opts):
   tw = textwrap.TextWrapper(width=width, subsequent_indent=(" " * indent), break_long_words=False, break_on_hyphens=False)
   for name, desc in results:
     yield tw.fill("{0:{1}} = {2};".format(name, align_width, desc))+"\n"
-

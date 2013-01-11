@@ -1,3 +1,5 @@
+# vi:et:ts=2:sw=2
+
 import sys
 import modgrammar
 from modgrammar import *
@@ -38,7 +40,7 @@ class TestG1 (util.BasicGrammarTestCase):
     self.matches = ('ABC',)
     self.matches_with_remainder = ('ABCD',)
     self.fail_matches = ('ABX', 'BC', 'abc', 'AB C')
-    self.partials = (('A', 'B', 'C'), ('AB', 'C'), ('A', 'BC'), ('AB','CD'))
+    self.partials = (('A', 'B', 'C'), ('AB', 'C'), ('A', 'BC'), ('AB', 'CD'))
     self.fail_partials = (('A', 'B', 'X'), ('A', 'BX'))
 
 class TestG2 (util.BasicGrammarTestCase):
@@ -130,7 +132,7 @@ class TestLiteral (util.BasicGrammarTestCase):
     self.matches = ('ABC',)
     self.matches_with_remainder = ('ABCD',)
     self.fail_matches = ('ABX', 'BC', 'abc', '\nABC', 'AB C')
-    self.partials = (('A', 'B', 'C'), ('AB', 'C'), ('A', 'BC'), ('AB','CD'))
+    self.partials = (('A', 'B', 'C'), ('AB', 'C'), ('A', 'BC'), ('AB', 'CD'))
     self.fail_partials = (('A', 'B', 'X'), ('A', 'BX'))
 
 class TestEmpty (util.BasicGrammarTestCase):
@@ -435,7 +437,7 @@ class TestWord1 (util.BasicGrammarTestCase):
     g = GRAMMAR(self.grammar, 'a')
     p = g.parser()
     with self.assertRaises(ParseError):
-      p.parse_text('abcdefa') # doesn't have 'a' after the max word length
+      p.parse_text('abcdefa')  # doesn't have 'a' after the max word length
     p.reset()
     o = p.parse_text('abcdea')
     self.assertEqual(o.tokens(), ['abcde', 'a'])
@@ -450,7 +452,7 @@ class TestWord1 (util.BasicGrammarTestCase):
     self.assertEqual(o.tokens(), ['ab', 'a'])
     p.reset()
     with self.assertRaises(ParseError):
-      p.parse_text('aabcde') # has to backtrack too far
+      p.parse_text('aabcde')  # has to backtrack too far
 
   def test_greedy(self):
     # Make sure the default is to be greedy
@@ -529,7 +531,7 @@ class TestWord3 (util.BasicGrammarTestCase):
     self.assertEqual(o.tokens(), ['abcd', 'a'])
     p.reset()
     with self.assertRaises(ParseError):
-      p.parse_text('abcdab') # Would be OK except for longest=True
+      p.parse_text('abcdab')  # Would be OK except for longest=True
 
 class TestWord4 (util.BasicGrammarTestCase):
   def setUp(self):
@@ -777,7 +779,7 @@ class TestREF (util.BasicGrammarTestCase):
     self.matches = ('ABC',)
     self.matches_with_remainder = ('ABCD',)
     self.fail_matches = ('ABX', 'BC', 'abc', 'AB C')
-    self.partials = (('A', 'B', 'C'), ('AB', 'C'), ('A', 'BC'), ('AB','CD'))
+    self.partials = (('A', 'B', 'C'), ('AB', 'C'), ('A', 'BC'), ('AB', 'CD'))
     self.fail_partials = (('A', 'B', 'X'), ('A', 'BX'))
 
   def test_sanity(self):
@@ -790,4 +792,3 @@ class TestREF (util.BasicGrammarTestCase):
     # mode that matters.  Just skip these tests as they don't actually make
     # sense.
     pass
-

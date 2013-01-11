@@ -1,3 +1,5 @@
+# vi:et:ts=2:sw=2
+
 import unittest
 import sys
 import re
@@ -435,8 +437,8 @@ class WhitespaceModeTestCase (util.TestCase):
           sub_list.append(g.grammar[1])
     for sub_g in sub_list:
       if issubclass(sub_g, (Terminal, OR_Operator)):
-	# Terminals (and OR constructs) always normally have
-	# grammar_whitespace_mode set to 'explicit' 
+        # Terminals (and OR constructs) always normally have
+        # grammar_whitespace_mode set to 'explicit'
         self.check_recursive(name, sub_g, 'explicit', expected_sub)
       else:
         self.check_recursive(name, sub_g, expected_sub, expected_sub)
@@ -451,4 +453,3 @@ def load_tests(loader, tests, pattern):
   for name, g, expected in modreq_grammars:
     tests.addTest(WhitespaceModeTestCase('required', name, g, expected))
   return tests
-

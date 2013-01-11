@@ -1,3 +1,5 @@
+# vi:et:ts=2:sw=2
+
 from modgrammar import *
 from modgrammar.util import RepeatingTuple
 from .. import util
@@ -71,7 +73,7 @@ class GeneralRefTests (util.TestCase):
     o = G0.parser({'G1': None}).parse_text('a')
     self.assertIsInstance(o, G0)
     self.assertIsInstance(o.elements[0], G1)
-  
+
   def test_default(self):
     o = G4.parser().parse_text('a')
     self.assertIsInstance(o, G4)
@@ -79,12 +81,12 @@ class GeneralRefTests (util.TestCase):
     o = G4.parser({'subgrammar': G2}).parse_text('b')
     self.assertIsInstance(o, G4)
     self.assertIsInstance(o.elements[0], G2)
-  
+
   def test_null_override_with_default(self):
     o = G4.parser({'subgrammar': None}).parse_text('a')
     self.assertIsInstance(o, G4)
     self.assertIsInstance(o.elements[0], G1)
-  
+
   def test_unknown_ref(self):
     with self.assertRaises(UnknownReferenceError):
       o = G3.parser().parse_text('a')

@@ -1,3 +1,5 @@
+# vi:et:ts=2:sw=2
+
 from modgrammar import *
 from .. import util
 
@@ -44,4 +46,3 @@ class ResolveRefTests (util.TestCase):
   def test_parse(self):
     o = G0.parser().parse_text('aaaaa')
     self.assertIsNotNone(o)
-

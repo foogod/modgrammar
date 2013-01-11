@@ -1,3 +1,5 @@
+# vi:et:ts=2:sw=2
+#
 # This file just contains some handy routines for extracting version/readme
 # info from the appropriate files for use in setup.py and documentation
 # generation, so they don't have to be specified multiple places.

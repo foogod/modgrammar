@@ -1,3 +1,5 @@
+# vi:et:ts=2:sw=2
+
 import unittest
 import sys
 import re
@@ -309,6 +311,7 @@ class TestWSNorm (util.BasicGrammarTestCase):
 
 class TestWSCUST (util.BasicGrammarTestCase):
   ws_strs = ('-',)
+
   def setUp(self):
     self.grammar = WSCUSTGrammar
     self.grammar_name = "WSCUSTGrammar"
@@ -321,6 +324,7 @@ class TestWSCUST (util.BasicGrammarTestCase):
 
 class TestWSMix (util.BasicGrammarTestCase):
   ws_strs = (' ', '-')
+
   def setUp(self):
     self.grammar = WSMixGrammar
     self.grammar_name = "WSMixGrammar"
@@ -330,4 +334,3 @@ class TestWSMix (util.BasicGrammarTestCase):
     self.check_min_max = False
     self.matches = ('ABC', 'AABC', 'A-BC', 'AA-B-C', 'A A-B-C', 'A  ABC')
     self.fail_matches = ('A BC', 'A-ABC', 'AB C')
-

@@ -1,3 +1,5 @@
+# vi:et:ts=2:sw=2
+
 import re
 import traceback
 import sys

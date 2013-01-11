@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# vi:et:ts=4:sw=4
+
 try:
     from setuptools import setup, Command
 except ImportError:

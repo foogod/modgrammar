@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# vi:et:ts=4:sw=4
 #
 # Modgrammar documentation build configuration file, created by
 # sphinx-quickstart on Thu Feb 24 13:19:13 2011.
@@ -180,8 +181,8 @@ htmlhelp_basename = 'Modgrammardoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Modgrammar.tex', 'Modgrammar Documentation',
-   'Alex Stewart \\textless{}alex@foogod.com\\textgreater{}', 'manual'),
+    ('index', 'Modgrammar.tex', 'Modgrammar Documentation',
+     'Alex Stewart \\textless{}alex@foogod.com\\textgreater{}', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -221,4 +222,4 @@ man_pages = [
 
 import sphinx.jinja2glue
 if not hasattr(sphinx.jinja2glue.idgen, "next"):
-  sphinx.jinja2glue.idgen.next = sphinx.jinja2glue.idgen.__next__
+    sphinx.jinja2glue.idgen.next = sphinx.jinja2glue.idgen.__next__

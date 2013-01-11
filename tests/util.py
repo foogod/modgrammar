@@ -1,47 +1,49 @@
+# vi:et:ts=2:sw=2
+
 import sys
 import unittest
 from modgrammar import ParseError, Text
 from modgrammar.util import RepeatingTuple
 
 class _AssertRaisesContext(object):
-    """A context manager used to implement BasicGrammarTestCase.assertRaises* methods."""
+  """A context manager used to implement BasicGrammarTestCase.assertRaises* methods."""
 
-    def __init__(self, expected, test_case, expected_regexp=None, msg=None):
-        self.expected = expected
-        self.failureException = test_case.failureException
-        self.longMessage = test_case.longMessage
-        self.expected_regexp = expected_regexp
-        self.msg = msg
+  def __init__(self, expected, test_case, expected_regexp=None, msg=None):
+    self.expected = expected
+    self.failureException = test_case.failureException
+    self.longMessage = test_case.longMessage
+    self.expected_regexp = expected_regexp
+    self.msg = msg
 
-    def __enter__(self):
-        return self
+  def __enter__(self):
+    return self
 
-    def __exit__(self, exc_type, exc_value, tb):
-        if exc_type is None:
-            try:
-                exc_name = self.expected.__name__
-            except AttributeError:
-                exc_name = str(self.expected)
-            msg = "{0} not raised".format(exc_name)
-            if self.msg:
-              if self.longMessage:
-                msg = "{0}: {1}".format(msg, self.msg)
-              else:
-                msg = self.msg
-            raise self.failureException(msg)
-        if not issubclass(exc_type, self.expected):
-            # let unexpected exceptions pass through
-            return False
-        self.exception = exc_value # store for later retrieval
-        if self.expected_regexp is None:
-            return True
+  def __exit__(self, exc_type, exc_value, tb):
+    if exc_type is None:
+      try:
+        exc_name = self.expected.__name__
+      except AttributeError:
+        exc_name = str(self.expected)
+      msg = "{0} not raised".format(exc_name)
+      if self.msg:
+        if self.longMessage:
+          msg = "{0}: {1}".format(msg, self.msg)
+        else:
+          msg = self.msg
+      raise self.failureException(msg)
+    if not issubclass(exc_type, self.expected):
+      # let unexpected exceptions pass through
+      return False
+    self.exception = exc_value  # store for later retrieval
+    if self.expected_regexp is None:
+      return True
 
-        expected_regexp = self.expected_regexp
-        if isinstance(expected_regexp, str):
-            expected_regexp = re.compile(expected_regexp)
-        if not expected_regexp.search(str(exc_value)):
-            raise self.failureException('{!r} does not match {!r}'.format(expected_regexp.pattern, str(exc_value)))
-        return True
+    expected_regexp = self.expected_regexp
+    if isinstance(expected_regexp, str):
+      expected_regexp = re.compile(expected_regexp)
+    if not expected_regexp.search(str(exc_value)):
+      raise self.failureException('{!r} does not match {!r}'.format(expected_regexp.pattern, str(exc_value)))
+    return True
 
 
 class TestCase (unittest.TestCase):
@@ -82,7 +84,6 @@ class BasicGrammarTestCase (TestCase):
     self.fail_matches = ()
     self.partials = ()
     self.fail_partials = ()
-
 
   def check_result(self, teststr, o, istrue, msg):
     matchtypes = self.expected_match_types
@@ -171,12 +172,12 @@ class BasicGrammarTestCase (TestCase):
         p.reset()
         try:
           if p.parse_text(teststr) is None:
-	    # This should be caught in test_matches_with_remainder, so let that
-	    # one report the error, just keep going with the next test case.
+            # This should be caught in test_matches_with_remainder, so let that
+            # one report the error, just keep going with the next test case.
             continue
         except ParseError:
-	  # This should be caught in test_matches_with_remainder, so let that
-	  # one report the error, just keep going with the next test case.
+          # This should be caught in test_matches_with_remainder, so let that
+          # one report the error, just keep going with the next test case.
           continue
         remainder = p.remainder()
         teststr = teststr[:-len(remainder)]
@@ -186,21 +187,23 @@ class BasicGrammarTestCase (TestCase):
         remainder = p.remainder()
         self.check_result(teststr, o, None, msg)
         self.assertEqual(remainder, '', msg)
-	# Test this a second way, with the EOF being sent as an empty string
-	# after a partial-match, to make sure that works too.
+        # Test this a second way, with the EOF being sent as an empty string
+        # after a partial-match, to make sure that works too.
         msg = '[testcase={}, eof after partial]'.format(teststr)
         p.reset()
         o = p.parse_text(teststr)
         if o is None:
           o = p.parse_text('', eof=True)
         else:
-	  # some matches-with-remainder cases may immediately match, without
-	  # having to send an eof.  This is ok, too.
+          # some matches-with-remainder cases may immediately match, without
+          # having to send an eof.  This is ok, too.
           pass
         remainder = p.remainder()
         self.check_result(teststr, o, None, msg)
         self.assertEqual(remainder, '', msg)
-      # Make sure that if this grammar gets called with an empty text buffer and eof=True that it correctly yields either False or a 0-length match (specifically, yielding None on EOF is bad)
+      # Make sure that if this grammar gets called with an empty text buffer
+      # and eof=True that it correctly yields either False or a 0-length match
+      # (specifically, yielding None on EOF is bad)
       for teststr in ('', ' '):
         t = Text(teststr, eof=True)
         s = self.grammar.grammar_parse(t, 0, {})
@@ -209,7 +212,8 @@ class BasicGrammarTestCase (TestCase):
             break
           elif count not in (0, len(teststr)):
             self.fail("{!r} yielded count={!r} for {!r}+EOF".format(self.grammar, count, teststr))
-      # If we call parse_text with an empty buffer and eof=True, make sure it doesn't throw any exceptions
+      # If we call parse_text with an empty buffer and eof=True, make sure it
+      # doesn't throw any exceptions
       p.reset()
       o = p.parse_text('', eof=True)
     except ParseError:
@@ -304,4 +308,3 @@ class BasicGrammarTestCase (TestCase):
               self.assertEqual(remainder, wteststr, msg)
     except ParseError:
       self.fail("Got unexpected ParseError {}".format(msg))
-
