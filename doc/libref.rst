@@ -57,12 +57,14 @@ Class Attributes
 
       .. table::
 
-         ========== ============= ========================================
-         Name       Regexp        Meaning
-         ========== ============= ========================================
-         WS_DEFAULT \\s+          Any whitespace character (default)
-         WS_NOEOL   [^\\S\\r\\n]+ Any whitespace character except CR or NL
-         ========== ============= ========================================
+         ========== ==============================================
+         Name       Meaning
+         ========== ==============================================
+         WS_DEFAULT Any whitespace character (default)
+         WS_NOEOL   Any whitespace character except EOL characters
+         ========== ==============================================
+
+      (For more information on what constitutes whitespace and EOL characters, see :ref:`whitespace_newline`)
 
       Like :attr:`~Grammar.grammar_whitespace_mode`, ``grammar_whitespace`` can also be set as a module-level variable, in which case it will be used as the default for all grammar classes in that module.
 
@@ -214,7 +216,7 @@ The following basic grammar classes/factories are provided from which more compl
 
    Match the end of a line.
 
-   This grammar will match most common forms of line-end (newline, carriage-return, carriage-return + newline, or newline + carriage-return).  If you need something more specific, you may just want to use :func:`LITERAL` instead.
+   This grammar will match any standard line-end character or character sequence.  For more information on what sequences are considered an "end of line", see :ref:`whitespace_newline`.  If you need something more specific, you may just want to use :func:`LITERAL` instead.
 
 .. data:: EOF
 
@@ -228,7 +230,7 @@ The following basic grammar classes/factories are provided from which more compl
 
 .. data:: WHITESPACE
 
-   Match any string of whitespace.
+   Match any string of whitespace.  For more information on what is considered whitespace, see :ref:`whitespace_newline`.
 
    **Note:** This may not match as you expect if your grammar is whitespace-consuming (see the :attr:`~Grammar.grammar_whitespace_mode` attribute).
 
@@ -255,3 +257,73 @@ Miscellaneous
 
 .. autofunction:: generate_ebnf
 
+.. _whitespace_newline:
+
+Whitespace and Newline Handling
+===============================
+
+Several grammar constructs, such as :const:`SPACE`, and :const:`WHITESPACE` (as well as the :const:`WS_DEFAULT` and :const:`WS_NOEOL` regular expressions made available for use with :attr:`~Grammar.grammar_whitespace`) make reference of "whitespace characters".  Modgrammar considers a "whitespace character" to be any character which is defined in Unicode to have the "whitespace" character property (Note: This is also consistent with the behavior of the "\\s" regular expression escape sequence in Python).  Specifically, this includes the following characters:
+
+      .. table::
+
+         ========= ============ =========================
+         Character Other Names  Description
+         ========= ============ =========================
+         \\u0009   \\t, ^I, HT  horizontal tab
+         \\u000A   \\n, ^J, LF  line feed
+         \\u000B   \\v, ^K, VT  vertical tab
+         \\u000C   \\f, ^L, FF  form feed
+         \\u000D   \\r, ^M, CR  carriage return
+         \\u0020                space
+         \\u0085   NEL          next line
+         \\u00A0                no-break space
+         \\u1680                ogham space mark
+         \\u180E                mongolian vowel separator
+         \\u2000                en quad
+         \\u2001                em quad
+         \\u2002                en space
+         \\u2003                em space
+         \\u2004                three-per-em space
+         \\u2005                four-per-em space
+         \\u2006                six-per-em space
+         \\u2007                figure space
+         \\u2008                punctuation space
+         \\u2009                thin space
+         \\u200A                hair space
+         \\u2028                line separator
+         \\u2029                paragraph separator
+         \\u202F                narrow no-break space
+         \\u205F                medium mathematical space
+         \\u3000                ideographic space
+         ========= ============ =========================
+
+Note that this is a fairly generous definition of whitespace, designed to be fully Unicode, cross-language, and cross-platform conformant.  In some cases, however, this may not be desirable, as many standards specify a more limited set of characters which should be considered "whitespace".  In many cases, being more liberal on input (parsing) is not a problem, and can even be beneficial, but this should be evaluated on a case-by-case basis if you are writing a parser to match a particular standard definition.  Note also that for some applications it may be useful to, for example, have the parser treat \\u00A0 and \\u202F (non-breaking spaces) as non-whitespace (so that they won't be interpreted as token-separators), etc.
+
+If you wish to have a different definition for "whitespace" in your grammar, you will need to change the value of :attr:`~Grammar.grammar_whitespace` to a custom regular expression which will match a string of whitespace characters according to whatever definition of "whitespace" you are using.  It may also be necessary to redefine the :const:`WHITESPACE` or :const:`SPACE` tokens to match, if your grammar makes use of them (or just not use them).
+
+It is important to note that if you change :attr:`~Grammar.grammar_whitespace`, this will *not* automatically affect any of the other whitespace-based grammars (such as :const:`WHITESPACE`), which will still match the default definition of "whitespace".  If you wish those to change as well, you will need to define your own alternative versions and use those instead of the standard ones.
+
+End-of-Line Characters
+----------------------
+
+Additionally, for :const:`EOL`, :const:`REST_OF_LINE`, :const:`SPACE`, and :const:`WS_NOEOL`, Modgrammar considers certain sequences of whitespace to also be "end of line" indicators.  An "end of line" sequence is any of the following:
+
+      .. table::
+
+         =============== ============= ===========================
+         Sequence        Other Names   Description
+         =============== ============= ===========================
+         \\u000D\\u000A  \\r\\n, CRLF  carriage return + line feed
+         \\u000A\\u000D  \\n\\r, LFCR  line feed + carriage return
+         \\u000A         \\n, ^J, LF   line feed
+         \\u000B         \\v, ^K, VT   vertical tab
+         \\u000C         \\f, ^L, FF   form feed
+         \\u000D         \\r, ^M, CR   carriage return
+         \\u0085         NEL           next line
+         \\u2028                       line separator
+         \\u2029                       paragraph separator
+         =============== ============= ===========================
+
+Again, this is a fairly generous list of options, designed to support as wide a range of inputs as possible automatically and usually "do the right thing".  If, however, you need a different set of "end of line" sequences, you may need to define your own versions of some of the above constructs instead of using the default ones provided by Modgrammar.
+
+Note that if you redefine :const:`EOL`, etc, this will not change how the parser calculates line numbers when parsing input, so the :attr:`~GrammarParser.line` and :attr:`~GrammarParser.col` parser attributes (as well as line/column information in :class:`~ParseError`\ s) will likely not match up with your language's actual interpretation of where lines end (Unfortunately, there is currently no support for changing how the parser interprets line boundaries).

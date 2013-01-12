@@ -9,6 +9,9 @@ import modgrammar
 
 PARSEERROR_FOUNDTXT_LEN = 16
 
+EOL_CHARS = '\r\n\f\v\u0085\u2028\u2029'
+EOL_RE = re.compile('\r\n|\n\r|[' + EOL_CHARS + ']')
+
 def update_best_error(current_best, err):
   if not current_best:
     return err
@@ -113,10 +116,10 @@ def make_classdict(base, grammar, kwargs, **defaults):
 def calc_line_col(string, count, line=0, col=0, tabs=1):
   pos = 0
   while True:
-    p = string.find('\n', pos, count) + 1
-    if not p:
+    m = EOL_RE.search(string, pos, count)
+    if not m:
       break
-    pos = p
+    pos = m.end()
     line += 1
     col = 0
   if tabs != 1:

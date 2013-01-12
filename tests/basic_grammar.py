@@ -594,7 +594,7 @@ class TestEOL (util.BasicGrammarTestCase):
     self.grammar_name = "EOL"
     self.grammar_details = "EOL"
     self.subgrammar_types = None
-    self.matches = ('\r\n', '\n\r')
+    self.matches = ('\r\n', '\n\r', '\f', '\v', '\u0085', '\u2028', '\u2029')
     self.matches_with_remainder = ('\r ', '\n ', '\r\r', '\n\n', '\r\n\r', '\n\r\n', '\r\n\r\n', '\n\r\n\r')
     self.fail_matches = ('a\n', ' \r', ' \n')
     self.partials = (('\r', '\n'), ('\n', '\r'), ('\r', ' '), ('\n', ' '))
@@ -603,7 +603,7 @@ class TestRestOfLine (util.BasicGrammarTestCase):
   def setUp(self):
     self.grammar = REST_OF_LINE
     self.grammar_name = "REST_OF_LINE"
-    self.grammar_details = "WORD('^\\r\\n', min=0)"
+    self.grammar_details = "REST_OF_LINE"
     self.matches_with_remainder = ('\r', '\n', ' \r', ' \n')
     self.matches_as_false = ('\r', '\n')
     self.partials = (('ab', '\n'), ('ab', '\r'), ('a', 'b\r'), ('a', 'b\n'))

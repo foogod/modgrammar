@@ -31,7 +31,7 @@ __all__ = [
 ]
 
 WS_DEFAULT = re.compile(r'\s+')
-WS_NOEOL = re.compile(r'[^\S\r\n]+')
+WS_NOEOL = re.compile('[^\S' + util.EOL_CHARS + ']+')
 
 grammar_whitespace = WS_DEFAULT
 grammar_whitespace_mode = 'optional'
@@ -1776,11 +1776,11 @@ class EOL (Terminal):
   grammar_whitespace = None
   grammar_desc = "end of line"
   grammar_collapse_skip = True
-  grammar = (L("\n\r") | L("\r\n") | L("\r") | L("\n"))
+  grammar = (L("\n\r") | L("\r\n") | WORD(util.EOL_CHARS, count=1))
 
 class WHITESPACE (Word):
   grammar_desc = "whitespace"
-  regexp = re.compile("[\s]+")
+  regexp = WS_DEFAULT
 
   @classmethod
   def __class_init__(cls, attrs):
@@ -1793,7 +1793,7 @@ class WHITESPACE (Word):
 
 class SPACE (Word):
   grammar_desc = "whitespace"
-  regexp = re.compile("[\s]+")
+  regexp = WS_DEFAULT
 
   @classmethod
   def __class_init__(cls, attrs):
@@ -1820,7 +1820,15 @@ class SPACE (Word):
   def grammar_details(cls, depth=-1, visited=None):
     return cls.grammar_name
 
-REST_OF_LINE = ANY_EXCEPT("\r\n", min=0, grammar_name="REST_OF_LINE", grammar_desc="rest of the line")
+class REST_OF_LINE (Word):
+  grammar_name = "REST_OF_LINE"
+  grammar_desc = "rest of the line"
+  startchars = "^" + util.EOL_CHARS
+  grammar_min = 0
+
+  @classmethod
+  def grammar_details(cls, depth=-1, visited=None):
+    return cls.grammar_name
 
 ###############################################################################
 
