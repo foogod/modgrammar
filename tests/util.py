@@ -2,55 +2,59 @@
 
 import sys
 import unittest
-from modgrammar import ParseError, Text
+from modgrammar import ParseError, Text, ParserSession
 from modgrammar.util import RepeatingTuple
 
 class _AssertRaisesContext(object):
   """A context manager used to implement BasicGrammarTestCase.assertRaises* methods."""
 
-  def __init__(self, expected, test_case, expected_regexp=None, msg=None):
+  def __init__(self, expected, test_case, expected_regexp=None, msg=None, catchall=False):
     self.expected = expected
     self.failureException = test_case.failureException
     self.longMessage = test_case.longMessage
     self.expected_regexp = expected_regexp
     self.msg = msg
+    self.catchall = catchall
 
   def __enter__(self):
     return self
 
   def __exit__(self, exc_type, exc_value, tb):
+    try:
+      exc_name = self.expected.__name__
+    except AttributeError:
+      exc_name = str(self.expected)
+    msg = None
     if exc_type is None:
-      try:
-        exc_name = self.expected.__name__
-      except AttributeError:
-        exc_name = str(self.expected)
       msg = "{0} not raised".format(exc_name)
+    elif not issubclass(exc_type, self.expected):
+      if not self.catchall:
+        # let unexpected exceptions pass through
+        return False
+      msg = "Expected {0} but got {1} instead".format(exc_name, exc_type.__name__)
+    else:
+      self.exception = exc_value  # store for later retrieval
+      if self.expected_regexp is not None:
+        expected_regexp = self.expected_regexp
+        if isinstance(expected_regexp, str):
+          expected_regexp = re.compile(expected_regexp)
+        if not expected_regexp.search(str(exc_value)):
+          msg = '{!r} does not match {!r}'.format(expected_regexp.pattern, str(exc_value))
+    if msg:
       if self.msg:
         if self.longMessage:
           msg = "{0}: {1}".format(msg, self.msg)
         else:
           msg = self.msg
       raise self.failureException(msg)
-    if not issubclass(exc_type, self.expected):
-      # let unexpected exceptions pass through
-      return False
-    self.exception = exc_value  # store for later retrieval
-    if self.expected_regexp is None:
-      return True
-
-    expected_regexp = self.expected_regexp
-    if isinstance(expected_regexp, str):
-      expected_regexp = re.compile(expected_regexp)
-    if not expected_regexp.search(str(exc_value)):
-      raise self.failureException('{!r} does not match {!r}'.format(expected_regexp.pattern, str(exc_value)))
     return True
 
 
 class TestCase (unittest.TestCase):
   ws_strs = (' ',)
 
-  def assertRaises(self, excClass, callableObj=None, msg=None):
-    context = _AssertRaisesContext(excClass, self, msg=msg)
+  def assertRaises(self, excClass, callableObj=None, msg=None, catchall=False):
+    context = _AssertRaisesContext(excClass, self, msg=msg, catchall=catchall)
     if callableObj is None:
       return context
     with context:
@@ -206,7 +210,7 @@ class BasicGrammarTestCase (TestCase):
       # (specifically, yielding None on EOF is bad)
       for teststr in ('', ' '):
         t = Text(teststr, eof=True)
-        s = self.grammar.grammar_parse(t, 0, {})
+        s = self.grammar.grammar_parse(t, 0, ParserSession())
         for count, obj in s:
           if count is False:
             break

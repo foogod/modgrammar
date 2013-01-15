@@ -31,6 +31,7 @@ Library Reference
    :maxdepth: 2
 
    libref.rst
+   debugging.rst
 
 Examples
 ========

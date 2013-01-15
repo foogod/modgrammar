@@ -5,6 +5,7 @@ import re
 import textwrap
 from . import util
 from .util import error_result
+from . import debugging
 
 __doc__ = """
 This module provides a full-featured pure-python framework for building tokenizing LR language parsers and interpreters for context-free grammars.  (The :mod:`modgrammar` parsing engine is implemented as a recursive-descent parser with backtracking, using an object-oriented grammar model.)
@@ -291,6 +292,12 @@ class Text:
     cls = self.__class__
     return "{0.__module__}.{0.__name__}({1.string!r}, bol={1.bol}, eof={1.eof})".format(cls, self)
 
+class ParserSession:
+  def __init__(self, data={}):
+    self.data = data
+    self.parser = None
+    self.debugger = None
+
 class GrammarParser:
   """
   Parser objects are the way in which an application can actually make use of a grammar definition.  They provide the core interface to take input texts and attempt to match them against an associated grammar definition.
@@ -309,13 +316,19 @@ class GrammarParser:
 
   .. attribute:: col
 
-     The position of the current :attr:`line` we're at.
+     The position within the current :attr:`line` we're at.
   """
 
-  def __init__(self, grammar, sessiondata, tabs):
+  def __init__(self, grammar, sessiondata, tabs, debug, debug_flags):
     self.grammar = grammar
     self.tabs = tabs
-    self.sessiondata = sessiondata
+    self.session = ParserSession(sessiondata)
+    if not debug:
+      self.debugger = None
+    elif isinstance(debug, debugging.GrammarDebugger):
+      self.debugger = debug
+    else:
+      self.debugger = debugging.GrammarDebugger(debug, debug_flags)
     self.reset()
 
   def reset(self):
@@ -346,12 +359,15 @@ class GrammarParser:
   def append(self, string, bol=None, eof=None):
     self.text.append(string, bol=bol, eof=eof)
 
-  def _parse(self, pos, data, matchtype):
+  def _parse(self, pos, session, matchtype):
+    debugger = session.debugger
     parsestate, matches = self.state
     while True:
       if not parsestate:
         matches = []
-        parsestate = self.grammar.grammar_parse(self.text, pos, data)
+        parsestate = self.grammar.grammar_parse(self.text, pos, session)
+        if debugger:
+          parsestate = debugger.debug_wrapper(parsestate, self.grammar, pos, self.text)
         count, obj = next(parsestate)
       else:
         count, obj = parsestate.send(self.text)
@@ -382,6 +398,9 @@ class GrammarParser:
         raise ParseError(self.grammar, self.text.string, errpos, char, line=line, col=col, expected=expected)
       if count is None:
         # We need more input
+        if self.text.eof:
+          # Grammars should not be asking for more data after eof.
+          raise InternalError("Grammar requested more data when at EOF (invoke with debug mode for more detailed info)")
         self.state = (parsestate, matches)
         return (None, None)
       matches.append((count, obj))
@@ -404,7 +423,7 @@ class GrammarParser:
       count = max(x[0] for x in matches)
       pp_objs = []
       for obj in objs:
-        result = obj.grammar_postprocess(None, data)
+        result = obj.grammar_postprocess(None, session)
         if len(result) == 1:
           result = result[0]
         pp_objs.append(result)
@@ -412,19 +431,19 @@ class GrammarParser:
     else:
       raise ValueError("Invalid value for 'matchtype' parameter: {!r}".format(matchtype))
 
-    result = obj.grammar_postprocess(None, data)
+    result = obj.grammar_postprocess(None, session)
     if len(result) == 1:
       result = result[0]
     return (count, result)
 
-  def _parse_text(self, string, bol, eof, data, matchtype):
+  def _parse_text(self, string, bol, eof, session, matchtype):
     self.append(string, bol=bol, eof=eof)
     pos = 0
-    if data is None:
-      data = self.sessiondata
+    session.parser = self #FIXME
+    session.debugger = self.debugger
 
     while True:
-      count, obj = self._parse(pos, data, matchtype)
+      count, obj = self._parse(pos, session, matchtype)
       if count is None:
         # Partial match
         break
@@ -470,12 +489,16 @@ class GrammarParser:
       *bol*
         Treat the input text as starting at the beginning of a line (for the purposes of matching the :const:`BOL` grammar element).  It is not usually necessary to specify this explicitly.
     """
+    if data is None:
+      session = self.session
+    else:
+      session = ParserSession(data)
     if reset:
       self.reset()
     if multi:
-      return list(self._parse_text(string, bol, eof, data, matchtype))
+      return list(self._parse_text(string, bol, eof, session, matchtype))
     else:
-      for result in self._parse_text(string, bol, eof, data, matchtype):
+      for result in self._parse_text(string, bol, eof, session, matchtype):
         # This will always just return the first result
         return result
       return None
@@ -494,14 +517,18 @@ class GrammarParser:
 
     **Note:** Be careful using ``matchtype="all"`` with parse_lines/parse_file.  You must manually call :func:`~GrammarParser.skip` after each yielded match, or you will end up with an infinite loop!
     """
+    if data is None:
+      session = self.session
+    else:
+      session = ParserSession(data)
     if reset:
       self.reset()
     for line in lines:
-      for result in self._parse_text(line, bol, False, data, matchtype):
+      for result in self._parse_text(line, bol, False, session, matchtype):
         yield result
       bol = None
     if eof:
-      for result in self._parse_text("", None, True, data, matchtype):
+      for result in self._parse_text("", None, True, session, matchtype):
         yield result
 
   def parse_file(self, file, bol=False, eof=True, reset=False, data=None, matchtype='first'):
@@ -570,22 +597,24 @@ class Grammar (metaclass=GrammarClass):
     pass
 
   @classmethod
-  def parser(cls, sessiondata=None, tabs=1):
+  def parser(cls, sessiondata=None, tabs=1, debug=False, debug_flags=None):
     """
     Return a :class:`GrammarParser` associated with this grammar.
 
     If provided, *sessiondata* can contain data which should be provided to the :meth:`elem_init` method of each result object created during parsing.
 
     The *tabs* parameter indicates the width of "tab stops" in the input (i.e. how far a "tab" character will advance the column position when encountered).  This is only used to correctly report column numbers in :exc:`ParseError`\ s.  If you don't care about that, or your input does not contain tabs, you can ignore this parameter.
+
+    The *debug* and *debug_flags* options control whether and how debugging information will be output while using this parser.  For more information on grammar debugging, see the :mod:`modgrammar.debugging` module documentation.
     """
-    return GrammarParser(cls, sessiondata, tabs)
+    return GrammarParser(cls, sessiondata, tabs, debug, debug_flags)
 
   # Yields:
   #   Success:     (count, obj)
   #   Incomplete:  (None, None)
   #   Parse error: (False, error_tuple)
   @classmethod
-  def grammar_parse(cls, text, index, sessiondata):
+  def grammar_parse(cls, text, index, session):
     """
     This method is called by the :mod:`modgrammar` parser system to actually attempt to match this grammar against a piece of text.  This method is not intended to be called directly by an application (use the :meth:`parser` method to obtain a :class:`GrammarParser` object and use that).  In advanced cases, this method can be overridden to provide custom parsing behaviors for a particular grammar type.
 
@@ -608,6 +637,7 @@ class Grammar (metaclass=GrammarClass):
       whitespace_reqd = False
     if whitespace_re is True:
       whitespace_re = WS_DEFAULT
+    debugger = session.debugger
     objs = []
     states = []
     positions = []
@@ -634,6 +664,8 @@ class Grammar (metaclass=GrammarClass):
           while True:
             m = whitespace_re.match(text.string, pos)
             if m:
+              if debugger:
+                debugger.ws_skipped(cls, pos, text, m.end() - pos)
               pos = m.end()
             if pos < len(text.string) or text.eof:
               break
@@ -643,18 +675,20 @@ class Grammar (metaclass=GrammarClass):
             # whitespace is required between sub-grammars.  Handle this as if
             # there were a WHITESPACE grammar in this spot that gave us back an
             # error result.
+            if debugger:
+              debugger.ws_not_found(cls, pos, text)
             obj = util.error_result(pos, WHITESPACE)[1]
             best_error = util.update_best_error(best_error, obj)
             break
         if first_pos is None:
           first_pos = pos
-        s = grammar[len(objs)].grammar_parse(text, pos, sessiondata)
+        g = grammar[len(objs)]
+        s = g.grammar_parse(text, pos, session)
+        if debugger:
+          s = debugger.debug_wrapper(s, g, pos, text)
         while True:
           offset, obj = next(s)
           while offset is None:
-            if text.eof:
-              # Subgrammars should not be asking for more data after eof.
-              raise InternalError("{} requested more data when at EOF".format(grammar[len(objs)]))
             text = yield (None, None)
             offset, obj = s.send(text)
           if cls.grammar_null_subtoken_ok or offset is not 0:
@@ -684,9 +718,6 @@ class Grammar (metaclass=GrammarClass):
         pos, s = states[-1]
         offset, obj = next(s)
         while offset is None:
-          if text.eof:
-            # Subgrammars should not be asking for more data after eof.
-            raise InternalError("{} requested more data when at EOF".format(grammar[len(objs)-1]))
           text = yield (None, None)
           offset, obj = s.send(text)
         if offset is False:
@@ -850,7 +881,7 @@ class Grammar (metaclass=GrammarClass):
     self.elements = parsed
     self.string = ""
 
-  def grammar_collapsed_elems(self, sessiondata):
+  def grammar_collapsed_elems(self, session):
     """
     *Note: This is an instance method, not a classmethod*
 
@@ -867,29 +898,29 @@ class Grammar (metaclass=GrammarClass):
     else:
       return self.elements
 
-  def grammar_postprocess(self, parent, sessiondata):
+  def grammar_postprocess(self, parent, session):
     self.parent = parent
     if hasattr(self, '_str_info'):
       s, start, end = self._str_info
       self.string = s[start:end]
       #del self._str_info
       if self.grammar_collapse:
-        elems = self.grammar_collapsed_elems(sessiondata)
+        elems = self.grammar_collapsed_elems(session)
         pp_elems = []
         for e in elems:
           if e is None:
             pp_elems.append(e)
           else:
-            pp_elems.extend(e.grammar_postprocess(parent, sessiondata))
+            pp_elems.extend(e.grammar_postprocess(parent, session))
         return tuple(pp_elems)
       else:
         elems = self.elements
         pp_elems = []
         for e in elems:
-          pp_elems.extend(e.grammar_postprocess(self, sessiondata))
+          pp_elems.extend(e.grammar_postprocess(self, session))
         self.elements = tuple(pp_elems)
         del self._str_info
-    self.elem_init(sessiondata)
+    self.elem_init(session.data)
     return (self,)
 
   def elem_init(self, sessiondata):
@@ -1090,7 +1121,7 @@ class Literal (Terminal):
       cls.grammar_desc = repr(cls.string)
 
   @classmethod
-  def grammar_parse(cls, text, index, sessiondata):
+  def grammar_parse(cls, text, index, session):
     while (len(cls.string) + index > len(text.string)) and cls.string.startswith(text.string[index:]):
       if text.eof:
         break
@@ -1139,7 +1170,7 @@ class ANY (Terminal):
   grammar_desc = "any character"
 
   @classmethod
-  def grammar_parse(cls, text, index, sessiondata):
+  def grammar_parse(cls, text, index, session):
     while index == len(text.string):
       # The only case we can't match is if there's no input
       if text.eof:
@@ -1157,7 +1188,7 @@ class EMPTY (Terminal):
   grammar_desc = "(nothing)"
 
   @classmethod
-  def grammar_parse(cls, text, index, sessiondata):
+  def grammar_parse(cls, text, index, session):
     # This always matches, no matter where it is.
     yield (0, cls(""))
     yield error_result(index, cls)
@@ -1199,15 +1230,15 @@ class OR_Operator (Grammar):
       cls.grammar_desc = " or ".join(g.grammar_desc for g in cls.grammar)
 
   @classmethod
-  def grammar_parse(cls, text, index, sessiondata):
+  def grammar_parse(cls, text, index, session):
+    debugger = session.debugger
     best_error = None
     for g in cls.grammar:
-      results = g.grammar_parse(text, index, sessiondata)
+      results = g.grammar_parse(text, index, session)
+      if debugger:
+        results = debugger.debug_wrapper(results, g, index, text)
       for count, obj in results:
         while count is None:
-          if text.eof:
-            # Subgrammars should not be asking for more data after eof.
-            raise InternalError("{} requested more data when at EOF".format(g))
           text = yield (None, None)
           count, obj = results.send(text)
         if count is False:
@@ -1258,15 +1289,15 @@ class NotFollowedBy (Grammar):
       cls.grammar_desc = "anything except {}".format(cls.grammar[0].grammar_desc)
 
   @classmethod
-  def grammar_parse(cls, text, index, sessiondata):
+  def grammar_parse(cls, text, index, session):
     best_error = None
     g = cls.grammar[0]
-    results = g.grammar_parse(text, index, sessiondata)
+    debugger = session.debugger
+    results = g.grammar_parse(text, index, session)
+    if debugger:
+      results = debugger.debug_wrapper(results, g, index, text)
     count, obj = next(results)
     while count is None:
-      if text.eof:
-        # Subgrammars should not be asking for more data after eof.
-        raise InternalError("{} requested more data when at EOF".format(g))
       text = yield (None, None)
       count, obj = results.send(text)
     if count is not False:
@@ -1319,16 +1350,16 @@ class ExceptionGrammar (Grammar):
       cls.grammar_desc = "{} except {}".format(cls.grammar[0].grammar_desc, cls.grammar[1].grammar_desc)
 
   @classmethod
-  def grammar_parse(cls, text, index, sessiondata):
+  def grammar_parse(cls, text, index, session):
+    debugger = session.debugger
     best_error = None
     g = cls.grammar[0]
     exc = cls.grammar[1]
-    results = g.grammar_parse(text, index, sessiondata)
+    results = g.grammar_parse(text, index, session)
+    if debugger:
+      results = debugger.debug_wrapper(results, g, index, text)
     for count, obj in results:
       while count is None:
-        if text.eof:
-          # Subgrammars should not be asking for more data after eof.
-          raise InternalError("{} requested more data when at EOF".format(g))
         text = yield (None, None)
         count, obj = results.send(text)
       if count is False:
@@ -1336,8 +1367,11 @@ class ExceptionGrammar (Grammar):
         break
       # We found one, but now we need to check to make sure that the
       # exception-grammar does NOT match the same part of the text string.
-      exc_text = Text(text.string[:index+count], bol=text.bol, eof=True)
-      for e_count, e_obj in exc.grammar_parse(exc_text, index, sessiondata):
+      e_text = Text(text.string[:index+count], bol=text.bol, eof=True)
+      e_results = exc.grammar_parse(e_text, index, session)
+      if debugger:
+        e_results = debugger.debug_wrapper(e_results, exc, index, e_text)
+      for e_count, e_obj in e_results:
         if e_count == count:
           # Oops, we matched on the exception grammar (and it's a complete
           # match), don't return this one as a success.
@@ -1348,7 +1382,9 @@ class ExceptionGrammar (Grammar):
           yield (count, obj)
           break
         elif e_count is None:
-          # Subgrammars should not be asking for more data after eof.
+	  # We need to catch this here instead of at the toplevel because we
+	  # explicitly called the exception grammar with eof=True even though
+	  # the main buffer may not be at EOF yet.
           raise InternalError("{} requested more data when at EOF".format(g))
     # In some cases, our "best error" can lead to really confusing messages,
     # since it may say "expected foo" at a place where foo actually WAS found
@@ -1536,7 +1572,7 @@ class Word (Terminal):
     return "WORD({})".format(argspec)
 
   @classmethod
-  def grammar_parse(cls, text, index, sessiondata):
+  def grammar_parse(cls, text, index, session):
     greedy = cls.grammar_greedy or cls.longest_only
     returned = cls.grammar_min - 1
     while True:
@@ -1629,8 +1665,12 @@ class Reference (Grammar):
     return o
 
   @classmethod
-  def grammar_parse(cls, text, index, sessiondata):
-    state = cls.resolve(sessiondata).grammar_parse(text, index, sessiondata)
+  def grammar_parse(cls, text, index, session):
+    debugger = session.debugger
+    resolved = cls.resolve(session.data)
+    state = resolved.grammar_parse(text, index, session)
+    if debugger:
+      state = debugger.debug_wrapper(state, resolved, index, text)
     text = yield next(state)
     while True:
       text = yield state.send(text)
@@ -1676,7 +1716,7 @@ class ListRepetition (Repetition):
     grammar = GRAMMAR(cls.grammar)
     Repetition.__class_init__.__func__(cls, attrs)
     cls.sep = GRAMMAR(cls.sep)
-    succ_grammar = GRAMMAR(cls.sep, grammar, whitespace=cls.grammar_whitespace, whitespace_mode=cls.grammar_whitespace_mode)
+    succ_grammar = GRAMMAR(cls.sep, grammar, whitespace=cls.grammar_whitespace, whitespace_mode=cls.grammar_whitespace_mode, name='<next-list-element>')
     cls.grammar = util.RepeatingTuple(grammar, succ_grammar, len=cls.grammar_max)
 
   @classmethod
@@ -1693,7 +1733,7 @@ class ListRepetition (Repetition):
       params += ", collapse=True"
     return "LIST_OF({}, sep={}{})".format(cls.grammar[0].grammar_details(depth, visited), cls.sep.grammar_details(depth, visited), params)
 
-  def grammar_postprocess(self, parent, sessiondata):
+  def grammar_postprocess(self, parent, session):
     # Collapse down the succ_grammar instances for successive matches
     elems = []
     for e in self.elements:
@@ -1702,7 +1742,7 @@ class ListRepetition (Repetition):
       else:
         elems.extend(e.elements)
     self.elements = elems
-    return Grammar.grammar_postprocess(self, parent, sessiondata)
+    return Grammar.grammar_postprocess(self, parent, session)
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -1751,7 +1791,7 @@ class BOL (Terminal):
   grammar_desc = "beginning of line"
 
   @classmethod
-  def grammar_parse(cls, text, index, sessiondata):
+  def grammar_parse(cls, text, index, session):
     if index:
       if text.string[index-1] in ("\n", "\r"):
         yield (0, cls(""))
@@ -1766,7 +1806,7 @@ class EOF (Terminal):
   grammar_desc = "end of file"
 
   @classmethod
-  def grammar_parse(cls, text, index, sessiondata):
+  def grammar_parse(cls, text, index, session):
     if text.eof and index == len(text.string):
       yield (0, cls(""))
     yield error_result(index, cls)
@@ -1801,20 +1841,12 @@ class SPACE (Word):
     pass
 
   @classmethod
-  def grammar_parse(cls, text, index, sessiondata):
+  def grammar_parse(cls, text, index, session):
     util.depwarning("The meaning of SPACE will be changing: For future compatibility, use WHITESPACE instead.", util.get_calling_stacklevel() or 3)
-    s = Word.grammar_parse.__func__(cls, text, index, sessiondata)
-    offset, obj = next(s)
-    try:
-      while True:
-        if offset is None:
-          text = yield (offset, obj)
-          offset, obj = s.send(text)
-        else:
-          yield (offset, obj)
-          offset, obj = next(s)
-    except StopIteration:
-      pass
+    s = Word.grammar_parse.__func__(cls, text, index, session)
+    text = yield next(s)
+    while True:
+      text = yield s.send(text)
 
   @classmethod
   def grammar_details(cls, depth=-1, visited=None):

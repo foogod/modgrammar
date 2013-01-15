@@ -247,6 +247,7 @@ Exceptions
 ==========
 
 .. autoexception:: ParseError()
+.. autoexception:: GrammarDefError
 .. autoexception:: ReferenceError
 .. autoexception:: UnknownReferenceError
 .. autoexception:: BadReferenceError
