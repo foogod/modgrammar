@@ -509,7 +509,7 @@ class TestWord2 (util.BasicGrammarTestCase):
     o = p.parse_text('Abcade')
     self.assertEqual(o.tokens(), ['', 'A'])
 
-class TestWord3 (util.BasicGrammarTestCase):
+class TestWordLongest (util.BasicGrammarTestCase):
   def setUp(self):
     self.grammar = WORD('a-z', min=2, max=5, longest=True)
     self.grammar_name = "WORD('a-z')"
@@ -533,7 +533,7 @@ class TestWord3 (util.BasicGrammarTestCase):
     with self.assertRaises(ParseError):
       p.parse_text('abcdab')  # Would be OK except for longest=True
 
-class TestWord4 (util.BasicGrammarTestCase):
+class TestWordCaret (util.BasicGrammarTestCase):
   def setUp(self):
     self.grammar = WORD('^', min=2, max=5, longest=True)
     self.grammar_name = "WORD('^')"
@@ -543,6 +543,28 @@ class TestWord4 (util.BasicGrammarTestCase):
     self.fail_matches = ('A^^^', '\n^^^^^', '^ ^^^')
     self.partials = (('^', '^', '^', '^', '^'), ('^', '^', '#'))
     self.fail_partials = (('^', '#'),)
+
+class TestWordEscFalse (util.BasicGrammarTestCase):
+  def setUp(self):
+    self.grammar = WORD(r'\d]', min=2, max=5)
+    self.grammar_name = r"WORD('\\d]')"
+    self.grammar_details = r"WORD('\\d]', min=2, max=5)"
+    self.matches = ('\\\\\\\\\\', 'ddddd', ']]]]]', r'\d]\]')
+    self.matches_with_remainder = (r'\\\\\\', 'dddddd', ']]]]]]', r'\d]]d\\]')
+    self.fail_matches = ('12345', r'A\\', '\nddddd', r'\ \\')
+    self.partials = (('\\', '\\', '\\', '\\', '\\'), ('\\', '\\', '#'), (']', ']', ']', ']', ']'))
+    self.fail_partials = (('\\', '#'), (']', '#'))
+
+class TestWordEscTrue (util.BasicGrammarTestCase):
+  def setUp(self):
+    self.grammar = WORD(r'\d]', min=2, max=5, escapes=True)
+    self.grammar_name = r"WORD('\\d]')"
+    self.grammar_details = r"WORD('\\d]', min=2, max=5, escapes=True)"
+    self.matches = ('12345', ']]]]]', '1]2]3')
+    self.matches_with_remainder = ('123456',)
+    self.fail_matches = ('\\\\\\\\\\', 'ddddd', r'\d]\]', 'A123', '\n123', '1 23')
+    self.partials = (('1', '2', '3', '4', '5'), ('1', '2', '#'), (']', ']', ']', ']', ']'))
+    self.fail_partials = (('1', '#'), (']', '#'))
 
 class TestAnyExcept (util.BasicGrammarTestCase):
   def setUp(self):
