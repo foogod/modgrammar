@@ -534,18 +534,18 @@ class GrammarParser:
       for result in self._parse_text("", None, True, session, matchtype):
         yield result
 
-  def parse_file(self, file, bol=False, eof=True, reset=False, data=None, matchtype='first'):
+  def parse_file(self, file, encoding=None, bol=False, eof=True, reset=False, data=None, matchtype='first'):
     """
     *(generator method)*
 
     Open and process the contents of a file using the associated grammar.  This is basically the same as opening the specified file, and passing the resulting file object to :meth:`parse_lines`.
 
-    Return values, exceptions, and optional parameters are all exactly the same as for :meth:`parse_text`.
+    *file* and *encoding* are passed directly to :meth:`open`.  Return values, exceptions, and other optional parameters are all exactly the same as for :meth:`parse_text`.
 
     **Note:** Be careful using ``matchtype="all"`` with parse_lines/parse_file.  You must manually call :func:`~GrammarParser.skip` after each yielded match, or you will end up with an infinite loop!
     """
     if isinstance(file, str):
-      with open(file, "r") as f:
+      with open(file, "r", encoding=encoding) as f:
         for result in self.parse_lines(f, bol=bol, eof=eof, reset=reset, data=data, matchtype=matchtype):
           yield result
     else:
