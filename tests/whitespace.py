@@ -281,37 +281,6 @@ def load_tests(loader, tests, pattern):
   return tests
 
 ###############################################################################
-# Make sure that the default whitespace definitions correctly match all
-# standard unicode whitespace characters (not just the basic ASCII ones)
-###############################################################################
-
-class TestUnicodeWS (util.TestCase):
-  def test_WS_DEFAULT(self):
-    grammar = G('A', 'B', whitespace=WS_DEFAULT, whitespace_mode='optional')
-    o = grammar.parser().parse_text('A\u0009\u000a\u000b\u000c\u000d\u0020\u0085\u00a0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000B')
-
-  def test_WS_NOEOL(self):
-    grammar = G('A', 'B', whitespace=WS_NOEOL, whitespace_mode='optional')
-    o = grammar.parser().parse_text('A\u0009\u0020\u00a0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000B')
-
-  def test_WS_NOEOL_eolchars(self):
-    grammar = G('A', 'B', whitespace=WS_NOEOL, whitespace_mode='optional')
-    with self.assertRaises(ParseError):
-      o = grammar.parser().parse_text('A\u000aB')
-    with self.assertRaises(ParseError):
-      o = grammar.parser().parse_text('A\u000bB')
-    with self.assertRaises(ParseError):
-      o = grammar.parser().parse_text('A\u000cB')
-    with self.assertRaises(ParseError):
-      o = grammar.parser().parse_text('A\u000dB')
-    with self.assertRaises(ParseError):
-      o = grammar.parser().parse_text('A\u0085B')
-    with self.assertRaises(ParseError):
-      o = grammar.parser().parse_text('A\u2028B')
-    with self.assertRaises(ParseError):
-      o = grammar.parser().parse_text('A\u2029B')
-
-###############################################################################
 # The following tests the use of a custom regular expression for
 # grammar_whitespace
 ###############################################################################
