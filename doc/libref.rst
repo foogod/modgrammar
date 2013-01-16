@@ -32,6 +32,10 @@ Class Attributes
 
       A descriptive string for the grammar to be used in :exc:`ParseError` error messages. (Defaults to the same value as :attr:`grammar_name`.)
 
+   .. attribute:: Grammar.grammar_noteworthy
+
+      If :const:`False`, this grammar will not be mentioned as one of the possible matches when constructing :exc:`ParseError` error messages (this can be used for grammars which are so ubiquitous or implied that it's not generally necessary to mention them to the user).
+
    .. attribute:: Grammar.grammar_error_override
 
       If set, this grammar will report all match failures by its subgrammars as if it had failed itself.  This effectively "hides" the subgrammars in any :exc:`ParseError` (which will use this grammar's location and :attr:`grammar_desc` instead when constructing error messages, etc).

@@ -129,7 +129,10 @@ class ParseError (Exception):
       if not expected:
         message = ""
       else:
-        expected_txt = " or ".join(sorted(e.grammar_desc for e in expected))
+        noteworthy = [e for e in expected if e.grammar_noteworthy]
+        if not noteworthy:
+          noteworthy = expected
+        expected_txt = " or ".join(sorted(e.grammar_desc for e in noteworthy))
         found_txt = util.get_found_txt(buf, pos)
         message = "Expected {}: Found {}".format(expected_txt, found_txt)
     self.buffer = buf
@@ -590,6 +593,7 @@ class Grammar (metaclass=GrammarClass):
   grammar_whitespace = None
   grammar_whitespace_mode = None
   grammar_error_override = False
+  grammar_noteworthy = True
   grammar_hashattrs = ('grammar_name', 'grammar', 'grammar_min', 'grammar_max', 'grammar_collapse', 'grammar_greedy', 'grammar_whitespace', 'grammar_whitespace_mode')
 
   @classmethod
@@ -1804,6 +1808,7 @@ class EOF (Terminal):
   grammar_whitespace = None
   grammar = ()
   grammar_desc = "end of file"
+  grammar_noteworthy = False
 
   @classmethod
   def grammar_parse(cls, text, index, session):
@@ -1820,6 +1825,7 @@ class EOL (Terminal):
 
 class WHITESPACE (Word):
   grammar_desc = "whitespace"
+  grammar_noteworthy = False
   regexp = WS_DEFAULT
 
   @classmethod
@@ -1833,6 +1839,7 @@ class WHITESPACE (Word):
 
 class SPACE (Word):
   grammar_desc = "whitespace"
+  grammar_noteworthy = False
   regexp = WS_DEFAULT
 
   @classmethod

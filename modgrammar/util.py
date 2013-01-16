@@ -84,6 +84,7 @@ classdict_map = dict(
     whitespace_mode='grammar_whitespace_mode',
     name='grammar_name',
     desc='grammar_desc',
+    noteworthy='grammar_noteworthy',
     terminal='grammar_terminal',
     error_override='grammar_error_override',
 )
