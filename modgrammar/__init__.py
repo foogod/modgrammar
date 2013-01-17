@@ -185,10 +185,6 @@ class GrammarClass (type):
     if "grammar_whitespace" not in classdict and cls.grammar_whitespace is None:
       whitespace = getattr(mod, "grammar_whitespace", grammar_whitespace)
       cls.grammar_whitespace = whitespace
-    if cls.grammar_whitespace is False:
-      util.depwarning("grammar_whitespace=False is deprecated.  Use grammar_whitespace_mode='explicit' instead.", module=mod)
-    elif cls.grammar_whitespace is True:
-      util.depwarning("grammar_whitespace=True is deprecated.  Use grammar_whitespace_mode='optional' instead.", module=mod)
     if "grammar_whitespace_mode" not in classdict and cls.grammar_whitespace_mode is None:
       whitespace_mode = getattr(mod, "grammar_whitespace_mode", grammar_whitespace_mode)
       cls.grammar_whitespace_mode = whitespace_mode
@@ -389,8 +385,6 @@ class GrammarParser:
           # see whether we had only whitespace before the EOF.  If so, treat
           # this like the pos == len(self.text.string) case above.
           whitespace_re = self.grammar.grammar_whitespace
-          if whitespace_re is True:
-            whitespace_re = WS_DEFAULT
           m = whitespace_re.match(self.text.string, pos)
           if m and m.end() == len(self.text.string):
             return (None, None)
@@ -628,17 +622,16 @@ class Grammar (metaclass=GrammarClass):
     grammar_max = cls.grammar_max
     greedy = cls.grammar_greedy
     whitespace_mode = cls.grammar_whitespace_mode
+    whitespace_re = cls.grammar_whitespace
     if whitespace_mode == 'optional':
-      whitespace_re = cls.grammar_whitespace
+      whitespace_skip = True
       whitespace_reqd = False
     elif whitespace_mode == 'required':
-      whitespace_re = cls.grammar_whitespace
+      whitespace_skip = True
       whitespace_reqd = True
     else:
-      whitespace_re = False
+      whitespace_skip = False
       whitespace_reqd = False
-    if whitespace_re is True:
-      whitespace_re = WS_DEFAULT
     debugger = session.debugger
     objs = []
     states = []
@@ -662,7 +655,7 @@ class Grammar (metaclass=GrammarClass):
         if len(objs) >= grammar_max:
           break
         prews_pos = pos
-        if whitespace_re:
+        if whitespace_skip:
           while True:
             m = whitespace_re.match(text.string, pos)
             if m:

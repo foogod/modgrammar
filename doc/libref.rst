@@ -61,12 +61,12 @@ Class Attributes
 
       .. table::
 
-         ========== ==============================================
-         Name       Meaning
-         ========== ==============================================
-         WS_DEFAULT Any whitespace character (default)
-         WS_NOEOL   Any whitespace character except EOL characters
-         ========== ==============================================
+         =================== ===============================================
+         Name                Meaning
+         =================== ===============================================
+         :const:`WS_DEFAULT` Any whitespace characters (default)
+         :const:`WS_NOEOL`   Any whitespace characters except EOL characters
+         =================== ===============================================
 
       (For more information on what constitutes whitespace and EOL characters, see :ref:`whitespace_newline`)
 
@@ -246,6 +246,21 @@ References
 In some cases, it is necessary to refer to a portion of your grammar before it has actually been defined (for example, for recursive grammar definitions).  In this case, the :func:`REF` function can be used to refer to a grammar by name, which will be resolved to an actual grammar later.  (This construct can also be used to define a grammar which includes some "user-defined" sub-grammar, which the calling application can then provide at runtime.)
 
 .. autofunction:: REF
+
+Constants
+=========
+
+The following default regular expressions are provided for use with the :attr:`~Grammar.grammar_whitespace` attribute:
+
+.. data:: WS_DEFAULT
+
+   Will match any series of one or more whitespace characters (default)
+
+.. data:: WS_NOEOL
+
+   Will match any series of whitespace characters except EOL characters
+
+(For more information on what constitutes whitespace and EOL characters, see :ref:`whitespace_newline`)
 
 Exceptions
 ==========

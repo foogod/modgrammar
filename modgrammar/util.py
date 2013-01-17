@@ -100,12 +100,6 @@ def make_classdict(base, grammar, kwargs, **defaults):
     mod = get_calling_module()
     whitespace = getattr(mod, "grammar_whitespace", modgrammar.grammar_whitespace)
     cdict["grammar_whitespace"] = whitespace
-  if cdict.get("grammar_whitespace", None) is False:
-    mod = get_calling_module()
-    depwarning("grammar_whitespace=False is deprecated.  Use grammar_whitespace_mode='explicit' instead.", get_calling_stacklevel() or 3, mod)
-  elif cdict.get("grammar_whitespace", None) is True:
-    mod = get_calling_module()
-    depwarning("grammar_whitespace=True is deprecated.  Use grammar_whitespace_mode='optional' instead.", get_calling_stacklevel() or 3, mod)
   if not "grammar_whitespace_mode" in cdict and base.grammar_whitespace_mode is None:
     mod = get_calling_module()
     whitespace_mode = getattr(mod, "grammar_whitespace_mode", modgrammar.grammar_whitespace_mode)
