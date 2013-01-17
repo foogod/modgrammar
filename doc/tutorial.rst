@@ -239,6 +239,8 @@ There's one last piece of the puzzle that needs to be covered if we're going to 
 
 Let's take an example of a (very) basic mathematical-expression grammar::
 
+   grammar_whitespace_mode = 'optional'
+
    class Number (Grammar):
        grammar = (WORD("0-9"))
 
@@ -335,9 +337,9 @@ Luckily, this behavior is configurable.  If you would prefer that your grammar *
 
 #. You can change the value of ``grammar_whitespace_mode`` in the :mod:`modgrammar` module itself.  This will cause the :attr:`~modgrammar.Grammar.grammar_whitespace_mode` attribute on all grammar classes default to that value.  Note, however, that this will change the behavior of *all* grammars by default, even grammars in other modules which may use the same instance of :mod:`modgrammar`, so this is generally not recommended.
 
-#. The best way, usually, is to set ``grammar_whitespace_mode`` at the module level of the module in which you're defining your grammar classes.  Whenever you create a grammar class, :mod:`modgrammar` will look for this setting at the module level and use it instead of the global default.
+#. The best way, usually, is to set ``grammar_whitespace_mode`` at the module level of the module in which you're defining your grammar classes.  Whenever you create a grammar class, :mod:`modgrammar` will look for this setting at the module level and use it instead of the global default.  (You may remember this is what we did at the very beginning of our tutorial)
 
-You can set ``grammar_whitespace_mode`` to one of three string values, depending on the desired behavior.  The default is ``'optional'``, which means that any amount of whitespace between sub-grammars is allowed and will be automatically skipped.  If you set it to ``'explicit'``, then no special whitespace handling will be done at all, and any places in your grammar where you actually want to accept whitespace, you'll need to explicitly specify that in the grammar definition (if it finds whitespace where the grammar doesn't specify it, that will be considered an error).  On the other hand, you could also set it to ``'required'``, which (like 'optional') will allow any amount of whitespace between tokens, but will require that sub-grammars always must have at least *some* whitespace between them (this might be handy if, for example, if you have a grammar which is all made up of english words).
+You can set ``grammar_whitespace_mode`` to one of three string values, depending on the desired behavior.  The default is ``'explicit'``, which means that no special whitespace handling will be done at all, and any places in your grammar where you actually want to accept whitespace, you'll need to explicitly specify that in the grammar definition (if it finds whitespace where the grammar doesn't specify it, that will be considered an error).  If you set it to ``'optional'`` (which we've been using here), then any amount of whitespace between sub-grammars is allowed and will be automatically skipped by the parser.  On the other hand, you could also set it to ``'required'``, which (like 'optional') will allow any amount of whitespace between tokens, but will require that sub-grammars always must have at least *some* whitespace between them (this might be handy if, for example, if you have a grammar which is all made up of english words).
 
 **Tip:** Even if you do want the default behavior, it's a good idea to set ``grammar_whitespace_mode`` explicitly at the beginning of your module just to be sure.  This way, if somehow the global ``modgrammar.grammar_whitespace_mode`` gets set to something different than you expect, it won't affect any of your defined grammar classes.
 

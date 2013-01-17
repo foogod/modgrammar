@@ -35,7 +35,7 @@ WS_DEFAULT = re.compile(r'\s+')
 WS_NOEOL = re.compile('[^\S' + util.EOL_CHARS + ']+')
 
 grammar_whitespace = WS_DEFAULT
-grammar_whitespace_mode = 'optional'
+grammar_whitespace_mode = 'explicit'
 
 class _Singleton:
   def __init__(self, name):
@@ -190,8 +190,6 @@ class GrammarClass (type):
     elif cls.grammar_whitespace is True:
       util.depwarning("grammar_whitespace=True is deprecated.  Use grammar_whitespace_mode='optional' instead.", module=mod)
     if "grammar_whitespace_mode" not in classdict and cls.grammar_whitespace_mode is None:
-      if not hasattr(mod, "grammar_whitespace") and not hasattr(mod, "grammar_whitespace_mode"):
-        util.depwarning("default whitespace mode will be changing.  For future compatibility, set grammar_whitespace_mode='optional' explicitly.", module=mod)
       whitespace_mode = getattr(mod, "grammar_whitespace_mode", grammar_whitespace_mode)
       cls.grammar_whitespace_mode = whitespace_mode
     cls.__class_init__(classdict)

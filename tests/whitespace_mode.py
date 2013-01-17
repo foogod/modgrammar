@@ -31,16 +31,16 @@ class G_Default_Opt (Grammar):
   grammar_whitespace_mode = 'optional'
 
 default_grammars = (
-  ("G_Default", G_Default, 'optional'),
+  ("G_Default", G_Default, 'explicit'),
   ("G_Default_Exp", G_Default_Exp, 'explicit'),
   ("G_Default_Req", G_Default_Req, 'required'),
   ("G_Default_Opt", G_Default_Opt, 'optional'),
-  ("GRAMMAR('A', 'B')", GRAMMAR('A', 'B'), 'optional'),
-  ("G('A', 'B')", G('A', 'B'), 'optional'),
-  ("REPEAT(L('A'))", REPEAT(L('A')), 'optional'),
-  ("ZERO_OR_MORE(L('A'))", ZERO_OR_MORE(L('A')), 'optional'),
-  ("ONE_OR_MORE(L('A'))", ONE_OR_MORE(L('A')), 'optional'),
-  ("LIST_OF(L('A'), sep=L('A'))", LIST_OF(L('A'), sep=L('A')), 'optional'),
+  ("GRAMMAR('A', 'B')", GRAMMAR('A', 'B'), 'explicit'),
+  ("G('A', 'B')", G('A', 'B'), 'explicit'),
+  ("REPEAT(L('A'))", REPEAT(L('A')), 'explicit'),
+  ("ZERO_OR_MORE(L('A'))", ZERO_OR_MORE(L('A')), 'explicit'),
+  ("ONE_OR_MORE(L('A'))", ONE_OR_MORE(L('A')), 'explicit'),
+  ("LIST_OF(L('A'), sep=L('A'))", LIST_OF(L('A'), sep=L('A')), 'explicit'),
 
   # Override 'explicit':
   ("GRAMMAR('A', whitespace_mode='explicit')", GRAMMAR('A', whitespace_mode='explicit'), 'explicit'),
@@ -405,7 +405,7 @@ class WhitespaceModeTestCase (util.TestCase):
   def __init__(self, module_setting, name, grammar, expected, modset_str=None):
     util.TestCase.__init__(self, 'perform_test')
     if module_setting is None:
-      self.module_setting = 'optional'
+      self.module_setting = 'explicit'
       self.module_setting_str = '(unset)'
     else:
       self.module_setting = module_setting

@@ -108,8 +108,6 @@ def make_classdict(base, grammar, kwargs, **defaults):
     depwarning("grammar_whitespace=True is deprecated.  Use grammar_whitespace_mode='optional' instead.", get_calling_stacklevel() or 3, mod)
   if not "grammar_whitespace_mode" in cdict and base.grammar_whitespace_mode is None:
     mod = get_calling_module()
-    if not hasattr(mod, "grammar_whitespace") and not hasattr(mod, "grammar_whitespace_mode"):
-      depwarning("default whitespace mode will be changing.  For future compatibility, set grammar_whitespace_mode='optional' explicitly.", get_calling_stacklevel() or 3, mod)
     whitespace_mode = getattr(mod, "grammar_whitespace_mode", modgrammar.grammar_whitespace_mode)
     cdict["grammar_whitespace_mode"] = whitespace_mode
   return cdict
