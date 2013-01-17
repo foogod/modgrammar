@@ -654,14 +654,30 @@ class TestANY (util.BasicGrammarTestCase):
     # the matches_with_remainder test cases.
     pass
 
-class TestSpace (util.BasicGrammarTestCase):
+class TestWhitespace (util.BasicGrammarTestCase):
   def setUp(self):
     self.grammar = WHITESPACE
     self.grammar_name = "WHITESPACE"
     self.grammar_details = "WHITESPACE"
-    self.matches_with_remainder = (' \t\r\na', '   a')
+    self.matches_with_remainder = (' a', '\ta', '\ra', '\na')
     self.fail_matches = ('a', 'a ')
-    self.partials = ((' ', 'a'),)
+    self.partials = ((' ', '\t', '\r', '\n', 'a'),)
+
+  def test_pre_post_space(self):
+    # This would normally fail the default pre/post space tests, because it has
+    # grammar_whitespace_mode='explicit', but still matches fine if there's
+    # whitespace at the beginning (because whitespace characters match the
+    # WHITESPACE criteria), so we'll just skip that test in this case.
+    pass
+
+class TestSpace (util.BasicGrammarTestCase):
+  def setUp(self):
+    self.grammar = SPACE
+    self.grammar_name = "SPACE"
+    self.grammar_details = "SPACE"
+    self.matches_with_remainder = (' a', '\ta')
+    self.fail_matches = ('\r', '\n', 'a', 'a ')
+    self.partials = ((' ', '\t', 'a'),)
 
   def test_pre_post_space(self):
     # This would normally fail the default pre/post space tests, because it has

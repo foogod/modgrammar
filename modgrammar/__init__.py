@@ -510,7 +510,8 @@ class GrammarParser:
 
     Return values, exceptions, and optional parameters are all exactly the same as for :meth:`parse_text`.
 
-    **Note:** Be careful using ``matchtype="all"`` with parse_lines/parse_file.  You must manually call :func:`~GrammarParser.skip` after each yielded match, or you will end up with an infinite loop!
+    .. note::
+       Be careful using ``matchtype="all"`` with parse_lines/parse_file.  You must manually call :func:`~GrammarParser.skip` after each yielded match, or you will end up with an infinite loop!
     """
     if data is None:
       session = self.session
@@ -534,7 +535,8 @@ class GrammarParser:
 
     *file* and *encoding* are passed directly to :meth:`open`.  Return values, exceptions, and other optional parameters are all exactly the same as for :meth:`parse_text`.
 
-    **Note:** Be careful using ``matchtype="all"`` with parse_lines/parse_file.  You must manually call :func:`~GrammarParser.skip` after each yielded match, or you will end up with an infinite loop!
+    .. note::
+       Be careful using ``matchtype="all"`` with parse_lines/parse_file.  You must manually call :func:`~GrammarParser.skip` after each yielded match, or you will end up with an infinite loop!
     """
     if isinstance(file, str):
       with open(file, "r", encoding=encoding) as f:
@@ -614,7 +616,8 @@ class Grammar (metaclass=GrammarClass):
     """
     This method is called by the :mod:`modgrammar` parser system to actually attempt to match this grammar against a piece of text.  This method is not intended to be called directly by an application (use the :meth:`parser` method to obtain a :class:`GrammarParser` object and use that).  In advanced cases, this method can be overridden to provide custom parsing behaviors for a particular grammar type.
 
-    NOTE: Overriding this method is very complicated and currently beyond the scope of this documentation.  This is not recommended for anyone who does not understand the :mod:`modgrammar` parser design very well.  (Someday, with luck, there will be some more documentation written on this advanced topic.)
+    .. note::
+       Overriding this method is very complicated and currently beyond the scope of this documentation.  This is not recommended for anyone who does not understand the :mod:`modgrammar` parser design very well.  (Someday, with luck, there will be some more documentation written on this advanced topic.)
     """
 
     grammar = cls.grammar
@@ -1200,7 +1203,8 @@ def OR(*grammars, **kwargs):
   """
   An either-or grammar that will successfully match if any of its subgrammars matches.  :func:`OR` grammars can also be created by combining other grammars in python expressions using the or operator (``|``).
 
-  **Note:** Each of the possible grammars are attempted in left-to-right order.  This means that if more than one of the listed grammars could potentially match, the leftmost one will always match first.
+  .. note::
+     Each of the possible grammars are attempted in left-to-right order.  This means that if more than one of the listed grammars could potentially match, the leftmost one will always match first.
   """
   collapsed = []
   for g in grammars:
@@ -1331,7 +1335,8 @@ def EXCEPT(grammar, exc_grammar, **kwargs):
   """
   Match *grammar*, but only if it does not also match *exception_grammar*.  (This is equivalent to the ``-`` (exception) operator in EBNF) :func:`EXCEPT` grammars can also be created by combining other grammars in python expressions using the except operator (``-``).
 
-  **Note:** In many cases there are more efficient ways to design a particular grammar than using this construct.  It is provided mostly for full EBNF compatibility.
+  .. note::
+     In many cases there are more efficient ways to design a particular grammar than using this construct.  It is provided mostly for full EBNF compatibility.
   """
   cdict = util.make_classdict(ExceptionGrammar, (grammar, exc_grammar), kwargs)
   return GrammarClass("<EXCEPT>", (ExceptionGrammar,), cdict)
@@ -1706,7 +1711,8 @@ def LIST_OF(*grammar, **kwargs):
   """
   Match a list consisting of repetitions of *grammar* separated by *sep*.  As with other repetition grammars, the *min* and *max* keywords can also be used to restrict the number of matches to a certain range.
 
-  **Note:** Although this is most commonly used with a literal separator (such as the default ``","``), actually any (arbitrarily-complex) subgrammar can be specified for *sep* if desired.
+  .. note::
+     Although this is most commonly used with a literal separator (such as the default ``","``), actually any (arbitrarily-complex) subgrammar can be specified for *sep* if desired.
   """
   cdict = util.make_classdict(ListRepetition, grammar, kwargs)
   return GrammarClass("<LIST>", (ListRepetition,), cdict)
@@ -1839,27 +1845,8 @@ class WHITESPACE (Word):
   def grammar_details(cls, depth=-1, visited=None):
     return cls.grammar_name
 
-class SPACE (Word):
-  grammar_desc = "whitespace"
-  grammar_noteworthy = False
-  regexp = WS_DEFAULT
-
-  @classmethod
-  def __class_init__(cls, attrs):
-    # Don't do the normal Word __class_init__ stuff.
-    pass
-
-  @classmethod
-  def grammar_parse(cls, text, index, session):
-    util.depwarning("The meaning of SPACE will be changing: For future compatibility, use WHITESPACE instead.", util.get_calling_stacklevel() or 3)
-    s = Word.grammar_parse.__func__(cls, text, index, session)
-    text = yield next(s)
-    while True:
-      text = yield s.send(text)
-
-  @classmethod
-  def grammar_details(cls, depth=-1, visited=None):
-    return cls.grammar_name
+class SPACE (WHITESPACE):
+  regexp = WS_NOEOL
 
 class REST_OF_LINE (Word):
   grammar_name = "REST_OF_LINE"
