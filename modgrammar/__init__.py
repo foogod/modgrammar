@@ -359,6 +359,7 @@ class GrammarParser:
   def _parse(self, pos, session, matchtype):
     debugger = session.debugger
     parsestate, matches = self.state
+    best_error = None
     while True:
       if not parsestate:
         matches = []
@@ -379,7 +380,8 @@ class GrammarParser:
           # does, we don't really expect anything else to match on an empty
           # string, so ignore the error.
           return (None, None)
-        errpos, expected = obj
+        best_error = util.update_best_error(best_error, obj)
+        errpos, expected = best_error
         if errpos == len(self.text.string) and self.grammar.grammar_whitespace_mode != 'explicit':
           # If we hit EOF and this grammar is whitespace-consuming, check to
           # see whether we had only whitespace before the EOF.  If so, treat
@@ -398,14 +400,22 @@ class GrammarParser:
           raise InternalError("Grammar requested more data when at EOF (invoke with debug mode for more detailed info)")
         self.state = (parsestate, matches)
         return (None, None)
+      if matchtype == 'complete' and (pos + count) != len(self.text.string):
+        # We're only looking for complete matches and this one has a remainder
+        # Pretend there was an EOI grammar at the end that didn't match
+        obj = error_result(pos + count, EOI)[1]
+        best_error = util.update_best_error(best_error, obj)
+        continue
       matches.append((count, obj))
-      if matchtype == 'first':
+      if matchtype in ('first', 'complete'):
         # We only need the first one, no need to keep looping
         break
 
     # At this point we've gotten one or more successful matches
     self.state = (None, None)
     if matchtype == 'first':
+      count, obj = matches[0]
+    elif matchtype == 'complete':
       count, obj = matches[0]
     elif matchtype == 'last':
       count, obj = matches[-1]
@@ -431,7 +441,11 @@ class GrammarParser:
       result = result[0]
     return (count, result)
 
-  def _parse_text(self, string, bol, eof, session, matchtype):
+  def _parse_text(self, string, bol, eof, data, matchtype):
+    if data is None:
+      session = self.session
+    else:
+      session = ParserSession(data)
     self.append(string, bol=bol, eof=eof)
     pos = 0
     session.parser = self #FIXME
@@ -458,7 +472,7 @@ class GrammarParser:
 
   def parse_text(self, string, bol=None, eof=None, reset=False, multi=False, data=None, matchtype='first'):
     """
-    Attempt to match *string* against the associated grammar.  If successful, returns a corresponding match object.  If there is an incomplete match (or it is impossible to determine yet whether the match is complete or not), save the current text in the match buffer and return :const:`None` to indicate more text is required.  If the text does not match any valid grammar construction, raise :exc:`ParseError`.
+    Add *string* to the parse buffer and attempt to match it against the associated grammar.  If successful, returns a corresponding match object.  If there is an incomplete match (or it is impossible to determine yet whether the match is complete or not), save the current text in the match buffer and return :const:`None` to indicate more text is required.  If the text does not match any valid grammar construction, raise :exc:`ParseError`.
 
     Optional parameters:
       *reset*
@@ -471,36 +485,42 @@ class GrammarParser:
         Use the provided data instead of the default *sessiondata* during this parse run.
       *matchtype*
         If a grammar could match multiple ways, determine how the best match is chosen:
-          "first" (default)
+          'first' (default)
             The first successful match the grammar comes up with (as determined by normal grammar test ordering).
-          "last"
+          'last'
             The last successful match.
-          "longest"
+          'longest'
             The match which uses up the longest portion of the input text.
-          "shortest"
+          'shortest'
             The match which uses up the shortest portion of the input text.
-          "all"
+          'complete'
+            The first match which exactly matches the input text (i.e. there is no remainder).
+          'all'
             Return all possible matches, in a list.  Note that in this case the buffer position will not be automatically advanced.  You must call :func:`~GrammarParser.skip` manually.
       *bol*
         Treat the input text as starting at the beginning of a line (for the purposes of matching the :const:`BOL` grammar element).  It is not usually necessary to specify this explicitly.
     """
-    if data is None:
-      session = self.session
-    else:
-      session = ParserSession(data)
     if reset:
       self.reset()
     if multi:
-      return list(self._parse_text(string, bol, eof, session, matchtype))
+      return list(self._parse_text(string, bol, eof, data, matchtype))
     else:
-      for result in self._parse_text(string, bol, eof, session, matchtype):
+      for result in self._parse_text(string, bol, eof, data, matchtype):
         # This will always just return the first result
         return result
       return None
 
-  def parse_string(self, *args, **kwargs):
-    util.depwarning("parse_string syntax will be changing: For future compatibility, use parse_text instead.")
-    return self.parse_text(*args, **kwargs)
+  def parse_string(self, string, data=None):
+    """
+    Assume that *string* is a complete self-contained text and attempt to match it (exactly) against the associated grammar.  This will discard any data previously in the buffer and will require that the grammar match the entire string (i.e. no remainder is allowed).
+
+    This is equivalent to ``.parse_text(string, reset=True, eof=True, matchtype='complete')``
+    """
+    self.reset()
+    for result in self._parse_text(string, True, True, data, 'complete'):
+      # This will always just return the first result
+      return result
+    return None
 
   def parse_lines(self, lines, bol=False, eof=False, reset=False, data=None, matchtype='first'):
     """
@@ -513,18 +533,14 @@ class GrammarParser:
     .. note::
        Be careful using ``matchtype="all"`` with parse_lines/parse_file.  You must manually call :func:`~GrammarParser.skip` after each yielded match, or you will end up with an infinite loop!
     """
-    if data is None:
-      session = self.session
-    else:
-      session = ParserSession(data)
     if reset:
       self.reset()
     for line in lines:
-      for result in self._parse_text(line, bol, False, session, matchtype):
+      for result in self._parse_text(line, bol, False, data, matchtype):
         yield result
       bol = None
     if eof:
-      for result in self._parse_text("", None, True, session, matchtype):
+      for result in self._parse_text("", None, True, data, matchtype):
         yield result
 
   def parse_file(self, file, encoding=None, bol=False, eof=True, reset=False, data=None, matchtype='first'):
@@ -1823,6 +1839,19 @@ class EOF (Terminal):
     if text.eof and index == len(text.string):
       yield (0, cls(""))
     yield error_result(index, cls)
+
+class EOI (EOF):
+  """
+  This "end-of-input" grammar is a special case of EOF only used internally by
+  the parser to indicate the failure point when a user requested
+  matchtype='complete' but there was more text present.
+
+  EOI is not exported by default, as it is not expected to be used in ordinary
+  grammars.
+  """
+
+  grammar_desc = "end of input"
+  _hash_id = hash(EOF)  # EOI will compare equal to EOF, if necessary
 
 class EOL (Terminal):
   grammar_whitespace_mode = 'explicit'

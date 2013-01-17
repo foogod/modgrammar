@@ -156,6 +156,7 @@ Parser Objects
    Methods:
 
    .. automethod:: GrammarParser.parse_text
+   .. automethod:: GrammarParser.parse_string
    .. automethod:: GrammarParser.parse_lines
    .. automethod:: GrammarParser.parse_file
    .. automethod:: GrammarParser.remainder

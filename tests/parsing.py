@@ -6,6 +6,7 @@ from . import util
 #TODO:
 # * corner cases for parse_text
 # * parse_lines
+# * parse_string
 
 grammar_whitespace_mode = 'optional'
 
@@ -24,6 +25,8 @@ class TestParseOpts (util.TestCase):
     self.assertEqual(o.string, 'a')
     o = grammar.parser().parse_text('aaaa', matchtype='all')
     self.assertEqual([x.string for x in o], ['aa', 'aaaa', 'a', 'aaa'])
+    o = grammar.parser().parse_text('aaaa', matchtype='complete')
+    self.assertEqual(o.string, 'aaaa')
 
   def test_matchtype_rep_greedy(self):
     grammar = REPEAT('a', min=1, max=4)
@@ -39,6 +42,8 @@ class TestParseOpts (util.TestCase):
     self.assertEqual(o.string, 'a')
     o = grammar.parser().parse_text('aaaa', matchtype='all')
     self.assertEqual([x.string for x in o], ['aaaa', 'aaa', 'aa', 'a'])
+    o = grammar.parser().parse_text('aaaa', matchtype='complete')
+    self.assertEqual(o.string, 'aaaa')
 
   def test_matchtype_rep_nongreedy(self):
     grammar = REPEAT('a', min=1, max=4, greedy=False)
@@ -54,6 +59,8 @@ class TestParseOpts (util.TestCase):
     self.assertEqual(o.string, 'a')
     o = grammar.parser().parse_text('aaaa', matchtype='all')
     self.assertEqual([x.string for x in o], ['a', 'aa', 'aaa', 'aaaa'])
+    o = grammar.parser().parse_text('aaaa', matchtype='complete')
+    self.assertEqual(o.string, 'aaaa')
 
   def test_multi(self):
     grammar = L('a')

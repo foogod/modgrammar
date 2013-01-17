@@ -662,18 +662,20 @@ Up to now, we've been using :meth:`~modgrammar.GrammarParser.parse_text` in its 
    *matchtype*
       For many grammars, there end up being cases where a piece of text could match multiple different ways.  This parameter lets you change how the parser decides which match is the "best" one to return.  It can be one of several different options:
 
-      "first" (default)
+      'first' (default)
          The parser will return the first successful match the grammar comes up with.  As mentioned before, matches are generally attempted in left-to-right order of the grammar definition, so for any :func:`~modgrammar.OR` clauses this means the leftmost successful match will be used.  (This is also affected by whether the grammars are greedy or not.  If a repetition is greedy, then the longest possible match will be first, otherwise the shortest will be the first one)
-      "last"
-         The parser will return the last successful match (using the same ordering  as for "first", just taking the last one instead of the first one)
-      "longest"
+      'last'
+         The parser will return the last successful match (using the same ordering  as for 'first', just taking the last one instead of the first one)
+      'longest'
          The parser will return the match which uses up the longest portion of the input text.
-      "shortest"
+      'shortest'
          The parser will return the match which uses up the shortest portion of the input text.
-      "all"
+      'complete'
+         The parser will return the first match which exactly matches the entire text in the buffer (there is no remainder left over).  If it cannot find such a match, it will raise :exc:`ParseError` instead.
+      'all'
          For each match, instead of returning one result object, the parser will return all possible result objects, in a list.  Note that in this case, the parser will not consume any of the text in the input buffer or advance the buffer position (because it's not obvious which match length to use).  You must do this manually by calling :func:`~modgrammar.GrammarParser.skip` after each successful match.
 
-      (It should be fairly obvious that "first" can be much more efficient than the other options, as the parser can stop after it gets the first match.  For all the other choices, the parser must keep trying until it finds all possible matches before it can decide which one to return.)
+      (It should be fairly obvious that 'first' can be much more efficient than the other options, as the parser can stop after it gets the first match.  For all the other choices, the parser must keep trying until it finds all possible matches before it can decide which one to return.)
 
    *bol*
       Indicates whether the parser should consider this text to be at the "beginning of a line".  This is usually not needed, and really only affects grammars that use the :const:`~modgrammar.BOL` built-in to match on beginning-of-line.  This defaults to true if we are just starting (i.e. after a :meth:`~modgrammar.GrammarParser.reset`), or if the last bit of text ended with a newline sequence, and false otherwise.  About the only time you will usually need to use this is if you are doing some unusual parsing where end-of-line is indicated by something outside the context of the text itself (even in those cases, it is often more convenient to just "fake it" by inserting newlines into the text before passing it to the parser instead).
