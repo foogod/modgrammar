@@ -983,29 +983,6 @@ class Grammar (metaclass=GrammarClass):
     except StopIteration:
       return None
 
-  def find_tag_all(self, *tag_path):
-    """
-    Return all elements anywhere in the parse tree with the given tag.
-
-    **Note:** This method is deprecated.  Its functionality is now part of :meth:`find_all` instead.
-    """
-    util.depwarning("find_tag_all is deprecated: Use find_all instead.")
-    func = lambda e, l: l in getattr(e, "grammar_tags", ())
-    return list(self._search_recursive(func, True, tag_path))
-
-  def find_tag(self, *tag_path):
-    """
-    Return the first element anywhere in the parse tree with the given tag (or by descending through multiple tags, in the same way as :meth:`find_tag_all`).
-
-    **Note:** This method is deprecated.  Its functionality is now part of :meth:`find` instead.
-    """
-    util.depwarning("find_tag is deprecated: Use find instead.")
-    func = lambda e, l: l in getattr(e, "grammar_tags", ())
-    try:
-      return next(self._search_recursive(func, True, tag_path))
-    except StopIteration:
-      return None
-
   def _search_recursive(self, func, skip, args):
     subargs = list(args)
     a = subargs.pop(0)

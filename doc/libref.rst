@@ -143,8 +143,6 @@ Useful Instance Methods
    .. automethod:: Grammar.get_all
    .. automethod:: Grammar.find
    .. automethod:: Grammar.find_all
-   .. automethod:: Grammar.find_tag
-   .. automethod:: Grammar.find_tag_all
    .. automethod:: Grammar.terminals
    .. automethod:: Grammar.tokens
  
