@@ -511,16 +511,16 @@ class TestWord2 (util.BasicGrammarTestCase):
 
 class TestWordLongest (util.BasicGrammarTestCase):
   def setUp(self):
-    self.grammar = WORD('a-z', min=2, max=5, longest=True)
+    self.grammar = WORD('a-z', min=2, max=5, fullmatch=True)
     self.grammar_name = "WORD('a-z')"
-    self.grammar_details = "WORD('a-z', min=2, max=5, longest=True)"
+    self.grammar_details = "WORD('a-z', min=2, max=5, fullmatch=True)"
     self.matches = ('abcde',)
     self.matches_with_remainder = ('abcdef', 'ab#cd')
     self.fail_matches = ('Abcd', '\nabcde', 'a bcd')
     self.partials = (('a', 'b', 'c', 'd', 'e'), ('a', 'b', '#'))
     self.fail_partials = (('a', '#'),)
 
-  # There should be no backtracking on longest=True WORD grammars
+  # There should be no backtracking on fullmatch=True WORD grammars
   def test_backtrack(self):
     g = GRAMMAR(self.grammar, 'a')
     p = g.parser()
@@ -531,13 +531,13 @@ class TestWordLongest (util.BasicGrammarTestCase):
     self.assertEqual(o.tokens(), ['abcd', 'a'])
     p.reset()
     with self.assertRaises(ParseError):
-      p.parse_text('abcdab')  # Would be OK except for longest=True
+      p.parse_text('abcdab')  # Would be OK except for fullmatch=True
 
 class TestWordCaret (util.BasicGrammarTestCase):
   def setUp(self):
-    self.grammar = WORD('^', min=2, max=5, longest=True)
+    self.grammar = WORD('^', min=2, max=5, fullmatch=True)
     self.grammar_name = "WORD('^')"
-    self.grammar_details = "WORD('^', min=2, max=5, longest=True)"
+    self.grammar_details = "WORD('^', min=2, max=5, fullmatch=True)"
     self.matches = ('^^^^^',)
     self.matches_with_remainder = ('^^^^^^', '^^#^^')
     self.fail_matches = ('A^^^', '\n^^^^^', '^ ^^^')

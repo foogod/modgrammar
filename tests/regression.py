@@ -81,7 +81,7 @@ class TestIssue23 (util.TestCase):
   """
 
   def test_except_multimatch(self):
-    grammar = EXCEPT(WORD('a-z', longest=True), L('foo') | L('foobar'))
+    grammar = EXCEPT(WORD('a-z', fullmatch=True), L('foo') | L('foobar'))
     with self.assertRaises(modgrammar.ParseError):
       # What should happen here:
       #   1. Successful match on the primary grammar (WORD)

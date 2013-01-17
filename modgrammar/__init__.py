@@ -1489,17 +1489,21 @@ class Repetition (Grammar):
   def grammar_ebnf_rhs(cls, opts):
     return None
 
-def WORD(startchars, restchars=None, longest=False, escapes=False, **kwargs):
+def WORD(startchars, restchars=None, fullmatch=False, escapes=False, **kwargs):
   """
   Match any text consisting of a sequence of the specified characters.  If *restchars* is not provided, all characters in the sequence must be in the set specified by *startchars*.  If *restchars* is provided, then *startchars* specifies the valid options for the first character of the sequence, and *restchars* specifies the valid options for all following characters.
 
   *startchars* and *restchars* are each strings containing a sequence of individual characters, or character ranges, in the same format used by python regular expressions for character-range (``[]``) operations (i.e. ``"0123456789"`` or ``"A-Za-z"``).  If the first character of *startchars* or *restchars* is ``^``, the meaning is also inverted, just as in regular expressions, so ``"^A-Z"`` would match anything *except* an upper-case ascii alphabet character.
 
-  If *longest* is true, then this construct will only match the longest possible sequence of matching characters in the input, and will not try to match any shorter sub-sequences (even if they would work better in the context of the larger grammar).  Effectively, this means any match returned is guaranteed to be followed by a non-word character or token.
+  If *fullmatch* is true, then this construct will only match the longest possible sequence of matching characters in the input, and will not try to match any shorter sub-sequences (even if they would work better in the context of the larger grammar).  Effectively, this means any match returned is guaranteed to be followed by a non-word character or token.
 
   By default, only ``^`` (when at the beginning) and ``-`` (when not at the beginning or end) are interpreted specially.  In particular, backslashes and brackets (``[`` and ``]``) have no special meaning when in *startchars* or *restchars* and will result in the grammar matching a backslash or a bracket in the input (this is different than when specifying character-ranges in regular expressions, where these characters have special meaning).  However, if *escapes* is :const:`True`, backslash-sequences in *startchars* and *restchars* will be treated the same as in Python regular expressions.  In particular, this means you can use ``\\d``, ``\\D``, ``\\s``, ``\\S``, ``\\w``, and ``\\W``, just as in regular expressions (see the documentation for the :mod:`re` module for more information).
   """
-  cdict = util.make_classdict(Word, (), kwargs, startchars=startchars, restchars=restchars, longest_only=longest, escapes=escapes)
+  if 'longest' in kwargs:
+    util.depwarning("'longest' argument to WORD() is deprecated.  Use 'fullmatch=True' instead.")
+    fullmatch = kwargs['longest']
+    del kwargs['longest']
+  cdict = util.make_classdict(Word, (), kwargs, startchars=startchars, restchars=restchars, fullmatch_only=fullmatch, escapes=escapes)
   return GrammarClass("<WORD>", (Word,), cdict)
 
 class Word (Terminal):
@@ -1507,7 +1511,7 @@ class Word (Terminal):
   grammar = ()
   startchars = ""
   restchars = None
-  longest_only = False
+  fullmatch_only = False
   escapes = False
   grammar_count = None
   grammar_min = 1
@@ -1569,15 +1573,15 @@ class Word (Terminal):
       argspec += ", min={}".format(min)
     if max:
       argspec += ", max={}".format(max)
-    if cls.longest_only:
-      argspec += ", longest=True"
+    if cls.fullmatch_only:
+      argspec += ", fullmatch=True"
     if cls.escapes:
       argspec += ", escapes=True"
     return "WORD({})".format(argspec)
 
   @classmethod
   def grammar_parse(cls, text, index, session):
-    greedy = cls.grammar_greedy or cls.longest_only
+    greedy = cls.grammar_greedy or cls.fullmatch_only
     returned = cls.grammar_min - 1
     while True:
       string = text.string
@@ -1597,7 +1601,7 @@ class Word (Terminal):
     if greedy:
       while matchlen >= cls.grammar_min:
         yield (matchlen, cls(string, index, index+matchlen))
-        if cls.longest_only:
+        if cls.fullmatch_only:
           break
         matchlen -= 1
     yield error_result(index, cls)
