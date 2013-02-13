@@ -456,17 +456,17 @@ Those with good memories will remember, back when we first introduced result obj
 
 The reason this is so powerful, quite simply, is that it means when you define a grammar class, you're not just defining the grammatical pattern of an element, but you're also defining the characteristics of the result object which will be produced.  Specifically, you can define methods and attributes which will be inherited by the result object when it's created.
 
-elem_init
-^^^^^^^^^
+grammar_elem_init
+^^^^^^^^^^^^^^^^^
 
-Now, there are two kinds of methods you can define for this purpose: methods which override standard result object behaviors, and methods which provide entirely new functionality.  In the first category, the one you will most commonly be interested in is :meth:`~modgrammar.Grammar.elem_init`.
+Now, there are two kinds of methods you can define for this purpose: methods which override standard result object behaviors, and methods which provide entirely new functionality.  In the first category, the one you will most commonly be interested in is :meth:`~modgrammar.Grammar.grammar_elem_init`.
 
-:meth:`~modgrammar.Grammar.elem_init` is called by the parsing engine after each result object is created, but before it is returned as part of a parse tree result.  This gives the object an opportunity to set up any custom state it wants before being returned to the caller.  For example, in our previous example, we could do the following::
+:meth:`~modgrammar.Grammar.grammar_elem_init` is called by the parsing engine after each result object is created, but before it is returned as part of a parse tree result.  This gives the object an opportunity to set up any custom state it wants before being returned to the caller.  For example, in our previous example, we could do the following::
 
    class MyNameIs (Grammar):
        grammar = ("my name is", FirstName, OPTIONAL(LastName))
 
-       def elem_init(self, sessiondata):
+       def grammar_elem_init(self, sessiondata):
            self.firstname = self[1].string
            if self[2]:
                self.lastname = self[2].string
@@ -486,9 +486,9 @@ Now if we take a look at the MyNameIs element produced from a parse result, it h
    >>> mynameis.fullname
    'Inigo Montoya'
 
-(**Note:** You might be inclined to do this sort of thing in :meth:`__init__` instead, but :meth:`~modgrammar.Grammar.elem_init` is preferred for several reasons.  One is that :meth:`__init__` has some specific arguments and expected behavior which the parsing engine relies on, so it is not recommended to override it.  Another is that at the time of :meth:`__init__`, the result object is not completely configured, so you do not have access to some useful aspects, such as the finalized list of sub-elements, session data, or anything that might be set up in sub-elements' :meth:`~modgrammar.Grammar.elem_init` methods.  By the time :meth:`~modgrammar.Grammar.elem_init` is called, you are guaranteed that the object has been fully set up and all of its sub-elements have been fully initialized.)
+.. note:: You might be inclined to do this sort of thing in :meth:`__init__` instead, but :meth:`~modgrammar.Grammar.grammar_elem_init` is preferred for several reasons.  One is that :meth:`__init__` has some specific arguments and expected behavior which the parsing engine relies on, so it is not recommended to override it.  Another is that at the time of :meth:`__init__`, the result object is not completely configured, so you do not have access to some useful aspects, such as the finalized list of sub-elements, session data, or anything that might be set up in sub-elements' :meth:`~modgrammar.Grammar.grammar_elem_init` methods.  By the time :meth:`~modgrammar.Grammar.grammar_elem_init` is called, you are guaranteed that the object has been fully set up and all of its sub-elements have been fully initialized.
 
-You might also have noticed the *sessiondata* parameter passed to :meth:`~modgrammar.Grammar.elem_init`.  We didn't take advantage of this earlier, but when you create your parser object, it is also possible to supply some "session data" (in the form of a dictionary of key-value parameters) which will be used when parsing text.  There are a couple of parser features that make use of this, but it's mainly useful because it's also passed to every object's :meth:`~modgrammar.Grammar.elem_init` method, giving you a way to communicate useful information from the creation of the parser all the way down to the initialization of the results.  For example, what if we changed :meth:`MyNameIs.elem_init` slightly, so the last line read::
+You might also have noticed the *sessiondata* parameter passed to :meth:`~modgrammar.Grammar.grammar_elem_init`.  We didn't take advantage of this earlier, but when you create your parser object, it is also possible to supply some "session data" (in the form of a dictionary of key-value parameters) which will be used when parsing text.  There are a couple of parser features that make use of this, but it's mainly useful because it's also passed to every object's :meth:`~modgrammar.Grammar.grammar_elem_init` method, giving you a way to communicate useful information from the creation of the parser all the way down to the initialization of the results.  For example, what if we changed :meth:`MyNameIs.grammar_elem_init` slightly, so the last line read::
 
    self.fullname = " ".join([sessiondata["name_prefix"], self.firstname, self.lastname])
 
@@ -504,17 +504,17 @@ Now, depending on how we create the parser, we can get different results::
    >>> result.find(MyNameIs).fullname
    'The swordfighter Inigo Montoya'
 
-The example here is obviously a bit trivial, but it at least shows some of the potential of such a feature.
+The example here is obviously a bit silly, but it at least shows some of the potential of such a feature.
 
 Dynamic Tagging
 ^^^^^^^^^^^^^^^
 
-Another nifty trick that can be performed with :meth:`~modgrammar.Grammar.elem_init` is to combine it with tagging to produce dynamically-assigned element tags.  All you need to do is set a :attr:`grammar_tags` attribute on the result object containing a tuple with the tags you want::
+Another nifty trick that can be performed with :meth:`~modgrammar.Grammar.grammar_elem_init` is to combine it with tagging to produce dynamically-assigned element tags.  All you need to do is set a :attr:`grammar_tags` attribute on the result object containing a tuple with the tags you want::
 
    class MyNameIs (Grammar):
        grammar = ("my name is", FirstName, OPTIONAL(LastName))
 
-       def elem_init(self, sessiondata):
+       def grammar_elem_init(self, sessiondata):
            self.firstname = self[1].string
            if self[2]:
                self.lastname = self[2].string

@@ -51,17 +51,13 @@ Class Attributes
         *'required'*
           Like *'optional'*, the grammar will skip over whitespace, but it will also require that there must be some amount of whitespace between each of its sub-grammars (if two sub-grammars occur in the input without any whitespace between them, that will be considered an error).
 
-      .. note::
-
-         In general, you will want to set this universally for your whole grammar.  The best way to do this is to define a ``grammar_whitespace_mode`` module-level variable in the same module as your grammar classes are defined.  If this is present, it will be used as the default for all grammar classes in that module.
+      .. note:: In general, you will want to set this universally for your whole grammar.  The best way to do this is to define a ``grammar_whitespace_mode`` module-level variable in the same module as your grammar classes are defined.  If this is present, it will be used as the default for all grammar classes in that module.
 
    .. attribute:: Grammar.grammar_whitespace
 
       In the case where you want a grammar to be "whitespace consuming" but want something other than the normal definition of "whitespace", you can also set :attr:`~Grammar.grammar_whitespace` to a custom regular expression object to be used instead.  This regular expression should attempt to match as much whitespace as possible, starting at the specified position in the string (the actual match result is not used, except that its length is used to determine how far to skip ahead in the string).
 
-      Modgrammar comes with two standard whitespace regexps which can be used out-of-the-box for :attr:`~Grammar.grammar_whitespace`:
-
-      .. table::
+      Modgrammar comes with two standard whitespace regexps which can be used "out of the box" for :attr:`~Grammar.grammar_whitespace`:
 
          =================== ===============================================
          Name                Meaning
@@ -72,7 +68,7 @@ Class Attributes
 
       (For more information on what constitutes whitespace and EOL characters, see :ref:`whitespace_newline`)
 
-      Like :attr:`~Grammar.grammar_whitespace_mode`, ``grammar_whitespace`` can also be set as a module-level variable, in which case it will be used as the default for all grammar classes in that module.
+      Similar to :attr:`~Grammar.grammar_whitespace_mode`, you can also set ``grammar_whitespace`` as a module-level variable, in which case it will be used as the default for all grammar classes in that module.
 
    There are also a few less-commonly-used class attributes which may be useful when inspecting grammars, or may be overridden in special cases:
 
@@ -84,17 +80,13 @@ Class Attributes
 
       If set to :const:`True` (default), indicates that in cases where this grammar could match multiple instances of a sub-text (i.e. for grammars that match repetitions), it should attempt to match the longest possible string first.  By contrast, if set to :const:`False`, the grammar will attempt to match the shortest repetition first.
 
-      .. note::
-
-         This attribute does not have any affect on most custom grammars (because most custom grammars are not themselves repetition grammars (instances of :class:`Repetition`)).  If you are looking to change this behavior in your own grammar definitions, you likely want to use the *greedy* parameter of :func:`REPEAT` (and related functions) instead.  Changing this attribute is mainly useful if for some reason you want to make a custom subclass of :class:`Repetition`, or if you are making a custom grammar element (with a custom :meth:`grammar_parse` definition) for which this setting might be significant.
+      .. note:: This attribute does not have any affect on most custom grammars (because most custom grammars are not themselves repetition grammars (instances of :class:`Repetition`)).  If you are looking to change this behavior in your own grammar definitions, you likely want to use the *greedy* parameter of :func:`REPEAT` (and related functions) instead.  Changing this attribute is mainly useful if for some reason you want to make a custom subclass of :class:`Repetition`, or if you are making a custom grammar element (with a custom :meth:`grammar_parse` definition) for which this setting might be significant.
 
    .. attribute:: Grammar.grammar_collapse_skip
 
       Specifies that, if an enclosing grammar is set to collapse, and this grammar is in its sub-grammar list, instances of this sub-grammar should also be left out of the resulting parse tree.
 
-      .. note::
-
-         There is usually no reason to set this attribute.  (It is enabled by default for :func:`LITERAL` grammars, as it is often desirable to leave literal matches out when collapsing grammars since they usually provide no information which isn't already known to the grammar designer.)
+      .. note:: There is usually no reason to set this attribute.  (It is enabled by default for :func:`LITERAL` grammars, as it is often desirable to leave literal matches out when collapsing grammars since they usually provide no information which isn't already known to the grammar designer.)
 
 Overridable Class Methods
 -------------------------
@@ -105,7 +97,6 @@ Overridable Class Methods
    .. automethod:: Grammar.grammar_ebnf_lhs
    .. automethod:: Grammar.grammar_ebnf_rhs
    .. automethod:: Grammar.grammar_parse
-   .. automethod:: Grammar.grammar_collapsed_elems
 
 Useful Class Methods
 --------------------
@@ -123,7 +114,8 @@ As match result objects are actually instances of the grammar class which produc
 Overridable Instance Methods
 ----------------------------
 
-   .. automethod:: Grammar.elem_init
+   .. automethod:: Grammar.grammar_elem_init
+   .. automethod:: Grammar.grammar_collapsed_elems
 
 Useful Instance Attributes
 --------------------------
@@ -151,7 +143,8 @@ Parser Objects
 
 .. autoclass:: GrammarParser()
 
-   Methods:
+Useful Methods
+--------------
 
    .. automethod:: GrammarParser.parse_text
    .. automethod:: GrammarParser.parse_string
@@ -171,14 +164,16 @@ The following basic grammar classes/factories are provided from which more compl
 
 * There are also several standard keyword parameters which correspond to the standard class attributes for the Grammar class.  Setting these keyword arguments will have the same effect as if the corresponding class attribute had been specified in a class definition:
 
-   .. table::
-
       ===================== ========================================
       Keyword               Class Attribute
       ===================== ========================================
       *collapse*            :attr:`~Grammar.grammar_collapse`
       *collapse_skip*       :attr:`~Grammar.grammar_collapse_skip`
+      *error_override*      :attr:`~Grammar.grammar_error_override`
+      *desc*                :attr:`~Grammar.grammar_desc`
       *greedy*              :attr:`~Grammar.grammar_greedy`
+      *name*                :attr:`~Grammar.grammar_name`
+      *noteworthy*          :attr:`~Grammar.grammar_noteworthy`
       *tags*                :attr:`~Grammar.grammar_tags`
       *whitespace_mode*     :attr:`~Grammar.grammar_whitespace_mode`
       *whitespace*          :attr:`~Grammar.grammar_whitespace`
@@ -213,9 +208,7 @@ The following basic grammar classes/factories are provided from which more compl
 
    Match the empty string.
 
-   .. note::
-
-      In most cases, :const:`None` is also equivalent to :const:`EMPTY`
+   .. note:: In most cases, :const:`None` is also equivalent to :const:`EMPTY`
 
 .. data:: BOL
 
@@ -233,9 +226,7 @@ The following basic grammar classes/factories are provided from which more compl
 
    Match the end of the file.
 
-   .. note::
-
-      This grammar will only match if the parse function is called with ``eof=True`` to indicate the end-of-file has been encountered.
+   .. note:: This grammar will only match if the parse function is called with ``eof=True`` to indicate the end-of-file has been encountered.
 
 .. data:: REST_OF_LINE
 
@@ -245,16 +236,13 @@ The following basic grammar classes/factories are provided from which more compl
 
    Match any string of whitespace.  For more information on what is considered whitespace, see :ref:`whitespace_newline`.
 
-   .. note::
-
-      This may not match as you expect if your grammar is whitespace-consuming (see the :attr:`~Grammar.grammar_whitespace_mode` attribute).
+   .. note:: This may not match as you expect if your grammar is whitespace-consuming (see the :attr:`~Grammar.grammar_whitespace_mode` attribute).
 
 .. data:: SPACE
 
    Match any string of whitespace except :const:`EOL` characters.  For more information on what is considered whitespace and "end of line" characters, see :ref:`whitespace_newline`.
 
-   .. note::
-      This may not match as you expect if your grammar is whitespace-consuming (see the :attr:`~Grammar.grammar_whitespace_mode` attribute).
+   .. note:: This may not match as you expect if your grammar is whitespace-consuming (see the :attr:`~Grammar.grammar_whitespace_mode` attribute).
 
 The :mod:`modgrammar.extras` module also contains some additional built-in grammars which can be useful in some contexts.
 
@@ -302,8 +290,6 @@ Whitespace and Newline Handling
 
 Several grammar constructs, such as :const:`SPACE`, and :const:`WHITESPACE` (as well as the :const:`WS_DEFAULT` and :const:`WS_NOEOL` regular expressions made available for use with :attr:`~Grammar.grammar_whitespace`) make reference of "whitespace characters".  Modgrammar considers a "whitespace character" to be any character which is defined in Unicode to have the "whitespace" character property (Note: This is also consistent with the behavior of the "\\s" regular expression escape sequence in Python).  Specifically, this includes the following characters:
 
-      .. table::
-
          ========= ============ =========================
          Character Other Names  Description
          ========= ============ =========================
@@ -345,8 +331,6 @@ End-of-Line Characters
 ----------------------
 
 Additionally, for :const:`EOL`, :const:`REST_OF_LINE`, :const:`SPACE`, and :const:`WS_NOEOL`, Modgrammar considers certain sequences of whitespace to also be "end of line" indicators.  An "end of line" sequence is any of the following:
-
-      .. table::
 
          =============== ============= ===========================
          Sequence        Other Names   Description

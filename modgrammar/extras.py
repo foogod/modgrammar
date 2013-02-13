@@ -76,7 +76,7 @@ class QuotedString (Terminal):
     cls.grammar_min = len(cls.grammar)
     cls.grammar_max = len(cls.grammar)
 
-  def elem_init(self, sessiondata):
+  def grammar_elem_init(self, sessiondata):
     contents = self.elements[1].string
     self.value = re.sub(r"\\(.)", r"\1", contents)
 
@@ -86,7 +86,7 @@ class QuotedString (Terminal):
 class Integer (Terminal):
   grammar = (OPTIONAL('-'), WORD('0-9'))
 
-  def elem_init(self, sessiondata):
+  def grammar_elem_init(self, sessiondata):
     self.value = int(self.string)
 
 class PositiveInteger (Integer):

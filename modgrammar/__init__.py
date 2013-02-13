@@ -615,7 +615,7 @@ class Grammar (metaclass=GrammarClass):
     """
     Return a :class:`GrammarParser` associated with this grammar.
 
-    If provided, *sessiondata* can contain data which should be provided to the :meth:`elem_init` method of each result object created during parsing.
+    If provided, *sessiondata* can contain data which should be provided to the :meth:`grammar_elem_init` method of each result object created during parsing.
 
     The *tabs* parameter indicates the width of "tab stops" in the input (i.e. how far a "tab" character will advance the column position when encountered).  This is only used to correctly report column numbers in :exc:`ParseError`\ s.  If you don't care about that, or your input does not contain tabs, you can ignore this parameter.
 
@@ -827,6 +827,10 @@ class Grammar (metaclass=GrammarClass):
     Returns the string to be used when :func:`repr` is used on this grammar class (**Note:** This is for the class itself, not for instances of the class.  For those, the usual :meth:`__repr__` is used).
     """
 
+    if not hasattr(cls, 'grammar'):
+      # This is an abstract class, so most of our grammar-related methods won't
+      # work right.  Just return a simple repr similar to Python's default.
+      return "<class '{}.{}'>".format(cls.__module__, cls.__name__)
     name = cls.grammar_name
     details = cls.grammar_details(1)
     if name == details or name.startswith("<"):
@@ -895,10 +899,8 @@ class Grammar (metaclass=GrammarClass):
     self.elements = parsed
     self.string = ""
 
-  def grammar_collapsed_elems(self, session):
+  def grammar_collapsed_elems(self, sessiondata):
     """
-    *Note: This is an instance method, not a classmethod*
-
     Return the list of elements to be used in place of this one when collapsing (this is only used if :attr:`grammar_collapse` is :const:`True`).
     """
     elems = []
@@ -919,7 +921,7 @@ class Grammar (metaclass=GrammarClass):
       self.string = s[start:end]
       #del self._str_info
       if self.grammar_collapse:
-        elems = self.grammar_collapsed_elems(session)
+        elems = self.grammar_collapsed_elems(session.data)
         pp_elems = []
         for e in elems:
           if e is None:
@@ -934,12 +936,22 @@ class Grammar (metaclass=GrammarClass):
           pp_elems.extend(e.grammar_postprocess(self, session))
         self.elements = tuple(pp_elems)
         del self._str_info
-    self.elem_init(session.data)
+    if hasattr(self, 'elem_init'):
+      for c in type.mro(self.__class__):
+        if 'elem_init' in c.__dict__:
+          break
+      else:
+        c = self.__class__
+      util.depwarning("In class {}.{}: 'elem_init' method is deprecated.  Use 'grammar_elem_init' instead.".format(c.__module__, c.__name__), util.get_calling_stacklevel())
+      self.elem_init(session.data)
+    self.grammar_elem_init(session.data)
     return (self,)
 
-  def elem_init(self, sessiondata):
+  def grammar_elem_init(self, sessiondata):
     """
     This method is called on each result object after it is fully initialized, before the resulting parse tree is returned to the caller.  It can be overridden to perform any custom initialization desired (the default implementation does nothing).
+
+    Note: If :attr:`grammar_collapse` is :const:`True`, this method is not called, and :meth:`grammar_collapsed_elems` is called instead.
     """
     pass
 
