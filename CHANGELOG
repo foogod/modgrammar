@@ -1,4 +1,19 @@
-Version 0.9.1: 2013-01-11 Alex Stewart <alex@foogod.com>
+Version 0.10: 2013-02-15 Alex Stewart <foogod@gmail.com>
+  * Issue 11: Change parse_string to assume self-contained input
+  * Issue 15: Change grammar_whitespace_mode to be 'explicit' by default
+  * Issue 16: Change SPACE to not match newlines
+  * Issue 19: Makesure all whitespace/EOL handling is unicode-aware
+  * Issue 21: Add the ability to produce debug output
+  * Issue 26: Add the ability to use regexp character class escapes in WORDs
+  * Issue 31: repr() breaks for abstract classes
+  * Removed deprecated find_tag and find_tag_all methods
+  * Added matchtype='complete' option to parser
+  * Added "encoding" parameter for parse_file()
+  * Added grammar_noteworthy attribute
+  * Deprecated WORD(longest=True) in favor of WORD(fullmatch=True)
+  * Misc doc cleanups
+
+Version 0.9.1: 2013-01-11 Alex Stewart <foogod@gmail.com>
   * Issue 20: Repetitions incorrectly allowing null subtokens
   * Issue 22: REFs don't have standard attributes (like grammar_name)
   * Issue 23: EXCEPT stops after first successful match, even if it doesn't
@@ -8,7 +23,7 @@ Version 0.9.1: 2013-01-11 Alex Stewart <alex@foogod.com>
   * Fix a leftover reference in the docs to find_tag* methods
   * Add a few missing attributes to classdict_map
 
-Version 0.9: 2013-01-03 Alex Stewart <alex@foogod.com>
+Version 0.9: 2013-01-03 Alex Stewart <foogod@gmail.com>
   * Clean up some warning messages from MANIFEST.in rules
   * Made ParseError "found text" chooser stop at end-of-line
   * Added WS_DEFAULT and WS_NOEOL standard whitespace regexps
@@ -26,7 +41,7 @@ Version 0.9: 2013-01-03 Alex Stewart <alex@foogod.com>
     grammar_whitespace_mode
   * Issue 18: Deprecated grammar_whitespace = True/False
 
-Version 0.8: 2011-12-22 Alex Stewart <alex@foogod.com>
+Version 0.8: 2011-12-22 Alex Stewart <foogod@gmail.com>
   * Added NOT_FOLLOWED_BY grammar construct
   * Added grammar_error_override option
   * matchtype="all" no longer auto-advances the buffer position
@@ -37,7 +52,7 @@ Version 0.8: 2011-12-22 Alex Stewart <alex@foogod.com>
   * Fixed Issue 3: Misc documentation fixups
   * Fixed Issue 4: Whitespace before EOF confuses parse_lines
 
-Version 0.7: 2011-04-12 Alex Stewart <alex@foogod.com>
+Version 0.7: 2011-04-12 Alex Stewart <foogod@gmail.com>
   * Added support for pickling result objects
   * Added the ability to use a custom regular expression for whitespace-handling
   * Made grammar classes compare equal if they are equivalent.
@@ -46,5 +61,5 @@ Version 0.7: 2011-04-12 Alex Stewart <alex@foogod.com>
     some constructs.
   * Fixed a bunch of misc whitespace parsing bugs
 
-Version 0.6: 2011-03-04 Alex Stewart <alex@foogod.com>
+Version 0.6: 2011-03-04 Alex Stewart <foogod@gmail.com>
   * First packaged version
